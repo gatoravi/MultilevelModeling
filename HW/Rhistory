@@ -1,0 +1,13 @@
+source("hw1.R")
+proportions
+sd(proportions)
+avg(proportions)
+mean(proportions)
+ p <- mean(proportions)
+sqrt(p * (1-p) / 3900)
+expected_sd <- sqrt(p * (1-p) / 3900)
+proportions - p
+(proportions - p) ^ 2 / p
+sum( (proportions - p) ^ 2 / p)
+1 - pchisq(0.0019, df = 23)
+p

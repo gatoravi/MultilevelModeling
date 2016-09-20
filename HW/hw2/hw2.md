@@ -141,6 +141,6 @@ plot(p1_last30$mort, predict(m3, p1_last30), xlab = "observed", ylab = "predicte
 ```
 
 ![](p1_modelfit.png)
-
+Note - the betas are no longer significant when just using half the initial data to fit the model.
 
 

@@ -2,9 +2,36 @@
 
 ##Question3.4
 ```R
-     library(foreign)
-     rb <- read.dta("pollution.dta")
+    library ("foreign")
+    iq.data <- read.dta ("child.iq/child.iq.dta")
+    model1 <- lm(ppvt ~ momage, data = iq.data)
+plot(iq.data$momage, iq.data$ppvt)
+lines(iq.data$momage, model1$fitted.values)
+
+> summary(model1)
+
+Call:
+lm(formula = ppvt ~ momage, data = iq.data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max
+-67.109 -11.798   2.971  14.860  55.210
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept)  67.7827     8.6880   7.802 5.42e-14 ***
+momage        0.8403     0.3786   2.219    0.027 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 20.34 on 398 degrees of freedom
+Multiple R-squared:  0.01223,   Adjusted R-squared:  0.009743
+F-statistic: 4.926 on 1 and 398 DF,  p-value: 0.02702
+
+
+iq.data$hs_status <- as.numeric(!(iq.data$educ_cat == 1))
 ```
+
 ##Question4.4
 
 ```R
@@ -142,5 +169,4 @@ plot(p1_last30$mort, predict(m3, p1_last30), xlab = "observed", ylab = "predicte
 
 ![](p1_modelfit.png)
 Note - the betas are no longer significant when just using half the initial data to fit the model.
-
 

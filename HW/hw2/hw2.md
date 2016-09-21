@@ -258,6 +258,82 @@ plot(p1_last30$mort, predict(m3, p1_last30), xlab = "observed", ylab = "predicte
 Note - the betas are no longer significant when just using half the initial data to fit the model.
 
 
+##Question5.4
+
+####A
+I used the breast cancer data from the UCI machine learning repository. The goal is to predict breast cancer status using a set of features.
+
+The dataset is located here - http://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data
+
+The features as described on the site are - 
+1) ID number
+2) Diagnosis (M = malignant, B = benign)
+Ten real-valued features are computed for each cell nucleus:
+    a) radius (mean of distances from center to points on the perimeter)
+    b) texture (standard deviation of gray-scale values)
+    c) perimeter
+    d) area
+    e) smoothness (local variation in radius lengths)
+    f) compactness (perimeter^2 / area - 1.0)
+    g) concavity (severity of concave portions of the contour)
+    h) concave points (number of concave portions of the contour)
+    i) symmetry
+    j) fractal dimension ("coastline approximation" - 1)
+
+I chose to use the first five features out of the thirty two features for my model.
+
+```
+ bc <- read.table("dat/wdbc.data", sep = ",")
+ bc$V2 <- ifelse(bc$V2 == "B", 0, 1) # B is benign, M is malignant
+ m1 <- glm(V2 ~ V3 + V4 + V5 + V6 + V7, data=bc, family=binomial(link="logit"))
+ m2 <- glm(V2 ~ V3 + V4 , data=bc, family=binomial(link="logit"))
+ m3 <- glm(V2 ~ V5 + V6 + V7, data=bc, family=binomial(link="logit"))
+ m4 <- glm(V2 ~ V4 + V5 + V6 + V7, data=bc, family=binomial(link="logit"))
+```
+
+####B
+My model m2 seems to have similar residual deviance compared to the other models. I will be using this for part c
+
+####C
+
+```
+summary(m2)
+
+Call:
+glm(formula = V2 ~ V3 + V4, family = binomial(link = "logit"),
+    data = bc)
+
+Deviance Residuals:
+    Min       1Q   Median       3Q      Max
+-2.1460  -0.3794  -0.1205   0.1267   2.8449
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)
+(Intercept) -19.84942    1.77395 -11.189  < 2e-16 ***
+V3            1.05710    0.10148  10.417  < 2e-16 ***
+V4            0.21814    0.03707   5.885 3.98e-09 ***
+    Null deviance: 751.44  on 568  degrees of freedom
+Residual deviance: 291.12  on 566  degrees of freedom
+AIC: 297.12
+```
+
+The outcome is significantly dependent on V3, V4 which are the tumor radius and tumor texture. These make sense
+since the malignant tumors are usually larger and have
+a distinct texture compared to the benign tumors.
+
+#####1
+For each unit increase in the radius the logit probability of being a tumor increases by 1.05 and for each unit increase in the texture of the tumor the logit probability of being a tumor increases by 0.218
+
+#####4
+```
+test <- data.frame(V3 = c(7, 9, 220), V4 = c(6, 11, 12))
+
+ predict(m2, test, type = "response")
+           1            2            3
+0.0000145071 0.0003575245 1.0000000000
+```
+As the tumor size and texture increases the probability of observing a malignant tumor increases.
+
 ##Question6.1
 
 ```R

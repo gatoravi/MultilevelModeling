@@ -170,3 +170,122 @@ plot(p1_last30$mort, predict(m3, p1_last30), xlab = "observed", ylab = "predicte
 ![](p1_modelfit.png)
 Note - the betas are no longer significant when just using half the initial data to fit the model.
 
+
+##Question6.1
+
+```R
+    library ("foreign")
+    rb <- read.dta ("dat/risky_behaviors.dta")
+    m1 <- glm(fupacts ~ women_alone, family="poisson", data = rb
+    summary(m1)
+    Call:
+    glm(formula = fupacts ~ women_alone, family = "poisson", data = rb)
+
+    Deviance Residuals:
+    Min      1Q  Median      3Q     Max
+    -6.095  -4.976  -3.321   1.261  27.159
+
+    Coefficients:
+                Estimate Std. Error z value Pr(>|z|)
+    (Intercept)  2.92168    0.01367  213.68   <2e-16 ***
+    women_alone -0.40554    0.02721  -14.91   <2e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    (Dispersion parameter for poisson family taken to be 1)
+
+        Null deviance: 13307  on 433  degrees of freedom
+    Residual deviance: 13070  on 432  degrees of freedom
+    AIC: Inf
+
+    Number of Fisher Scoring iterations: 6
+
+```
+The residual deviance is huge, the model is a poor fit. women_alone comes out as a significant predictor in this poor model.
+```
+attach(rb)
+yhat <- predict(m1, type = "response")
+z <- (fupacts - yhat)/sqrt(yhat)
+sum(z^2)/(nrow(rb) - 1)
+[1] 43.09338
+```
+
+There is definite overdispersion, a factor of 43
+
+####B
+```
+ m2 <- glm(fupacts ~ women_alone + bs_hiv + bupacts + couples, family="poisson", data = rb)
+summary(m2)
+
+Call:
+glm(formula = fupacts ~ women_alone + bs_hiv + bupacts + couples,
+    family = "poisson", data = rb)
+
+Deviance Residuals:
+    Min       1Q   Median       3Q      Max
+-19.161   -4.284   -2.526    1.300   23.002
+
+Coefficients:
+                 Estimate Std. Error z value Pr(>|z|)
+(Intercept)     2.8419972  0.0201435  141.09   <2e-16 ***
+women_alone    -0.6577924  0.0308170  -21.34   <2e-16 ***
+bs_hivpositive -0.4324392  0.0353714  -12.23   <2e-16 ***
+bupacts         0.0107584  0.0001741   61.81   <2e-16 ***
+couples        -0.4131564  0.0282688  -14.62   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 13307  on 433  degrees of freedom
+Residual deviance: 10225  on 429  degrees of freedom
+AIC: Inf
+
+Number of Fisher Scoring iterations: 6
+```
+The residual deviance is lower, the model fits better.
+
+```
+yhat <- predict(m2, type = "response")
+z2 <- (fupacts - yhat)/sqrt(yhat)
+sum(z2^2)/(nrow(rb) - 1)
+[1] 29.70968
+```
+
+Yes there is overdispersion still, a factor of 29.7
+
+####C
+```
+m3 <- glm(fupacts ~ women_alone + bs_hiv + bupacts + c
+ouples, family="quasipoisson", data = rb)
+Call:
+glm(formula = fupacts ~ women_alone + bs_hiv + bupacts + couples,
+    family = "quasipoisson", data = rb)
+
+Deviance Residuals:
+    Min       1Q   Median       3Q      Max
+-19.161   -4.284   -2.526    1.300   23.002
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)
+(Intercept)     2.8419972  0.1103059  25.765  < 2e-16 ***
+women_alone    -0.6577924  0.1687544  -3.898 0.000113 ***
+bs_hivpositive -0.4324392  0.1936943  -2.233 0.026092 *
+bupacts         0.0107584  0.0009531  11.288  < 2e-16 ***
+couples        -0.4131564  0.1548001  -2.669 0.007897 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for quasipoisson family taken to be 29.98672)
+
+    Null deviance: 13307  on 433  degrees of freedom
+Residual deviance: 10225  on 429  degrees of freedom
+AIC: NA
+
+Number of Fisher Scoring iterations: 6
+```
+
+Both the coefficients for 'couples' and 'women_alone' are significant. The coefficient 'women_alone' has a slightly higher effect on reducing the outcome variable. 
+
+####D
+Yes the responses from both men and women could be a problem if there is some sort of bias in the responses that aggregates by sex. There might also be cases where the answers of the couple might contradict each other.

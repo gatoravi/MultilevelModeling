@@ -3,34 +3,121 @@
 ##Question3.4
 ```R
     library ("foreign")
-    iq.data <- read.dta ("child.iq/child.iq.dta")
+    iq.data <- read.dta ("dat/child.iq.dta")
     model1 <- lm(ppvt ~ momage, data = iq.data)
-plot(iq.data$momage, iq.data$ppvt)
-lines(iq.data$momage, model1$fitted.values)
+    plot(iq.data$momage, iq.data$ppvt)
+    lines(iq.data$momage, model1$fitted.values)
 
-> summary(model1)
+    > summary(model1)
+
+    Call:
+    lm(formula = ppvt ~ momage, data = iq.data)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max
+    -67.109 -11.798   2.971  14.860  55.210
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+    (Intercept)  67.7827     8.6880   7.802 5.42e-14 ***
+    momage        0.8403     0.3786   2.219    0.027 *
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 20.34 on 398 degrees of freedom
+    Multiple R-squared:  0.01223,   Adjusted R-squared:  0.009743
+    F-statistic: 4.926 on 1 and 398 DF,  p-value: 0.02702
+    plot(model1)
+```
+[](q1_m1.png)
+[](q1_model1_all.png)
+
+The coefficient for momage is significant. Based solely on this model alonethe child's score increases with mom's age so I would recommend giving birth later which is late 20's according to this dataset. A years increase in mom's age results in a 0.8403 increase in child score.
+
+The assumptions here include that mom's age is the only relevant predictor of child's score(which might not be true). The errors of the model are independent, have equal variance and are normally distributed. 
+
+
+####B
+```
+    model2 <- lm(ppvt ~ momage + educ_cat, data = iq.data)
+    plot(model2)
+summary(model2)
 
 Call:
-lm(formula = ppvt ~ momage, data = iq.data)
+lm(formula = ppvt ~ momage + educ_cat, data = iq.data)
 
 Residuals:
     Min      1Q  Median      3Q     Max
--67.109 -11.798   2.971  14.860  55.210
+-61.763 -13.130   2.495  14.620  55.610
 
 Coefficients:
             Estimate Std. Error t value Pr(>|t|)
-(Intercept)  67.7827     8.6880   7.802 5.42e-14 ***
-momage        0.8403     0.3786   2.219    0.027 *
+(Intercept)  69.1554     8.5706   8.069 8.51e-15 ***
+momage        0.3433     0.3981   0.862 0.389003
+educ_cat      4.7114     1.3165   3.579 0.000388 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 20.34 on 398 degrees of freedom
-Multiple R-squared:  0.01223,   Adjusted R-squared:  0.009743
-F-statistic: 4.926 on 1 and 398 DF,  p-value: 0.02702
+Residual standard error: 20.05 on 397 degrees of freedom
+Multiple R-squared:  0.04309,   Adjusted R-squared:  0.03827
+F-statistic: 8.939 on 2 and 397 DF,  p-value: 0.0001594
 
-
-iq.data$hs_status <- as.numeric(!(iq.data$educ_cat == 1))
 ```
+![](q1_model2.png)
+
+Mom's age is not significant anymore, mom's educational
+category is significant and each increase in category leads to a 4.7 increase in child's score. Mom's age still has a positive coefficient. The R squared increased compared to the previous model which means more variance is being explained by this model. Timing of birth does not seem to be as important as mom's educational category.
+
+####C
+```
+    iq.data$hs_status <- as.numeric(!(iq.data$educ_cat == 1))
+    model3 <- lm(ppvt ~ momage + educ_cat + hs_status:momage, data = iq.data)
+summary(model3)
+
+Call:
+lm(formula = ppvt ~ momage + educ_cat + hs_status:momage, data = iq.data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max
+-58.117 -12.748   2.055  14.654  58.158
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)
+(Intercept)      74.96262    8.83925   8.481  4.5e-16 ***
+momage            0.06897    0.41110   0.168   0.8669
+educ_cat          1.56854    1.83048   0.857   0.3920
+momage:hs_status  0.38921    0.15855   2.455   0.0145 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 19.92 on 396 degrees of freedom
+Multiple R-squared:  0.05744,   Adjusted R-squared:  0.0503
+F-statistic: 8.044 on 3 and 396 DF,  p-value: 3.247e-05
+
+colors <- ifelse(iq.data$hs_status == 1, "green", "red")
+plot(iq$momage, iq$ppvt, ylab="child score", col=colors, pch=15)
+curve(cbind(1, 1, x, 1 * x) %*% coef(model3), add=TRUE, col="green") #yes high school
+curve(cbind(1, 0, x, 0 * x) %*% coef(model3), add=TRUE, col="red") # no high school
+```
+
+The coefficient for the interaction between momage and hs_status is significant. The coefficients for momage and educ_cat alone are not significant any more.
+
+From the regression lines it is seen that for the cases with no high school completion in moms, the rate of increase in the child's test score is smaller with increasing mom's age at birth compared to the moms who have completed high school.
+
+####D
+
+```
+ iq.data.first <- iq.data[1:200, ]
+ iq.data.second <- iq.data[200:400, ]
+ model4 <- lm(ppvt ~ momage + educ_cat, data = iq.data.first)
+ second_predicted <- predict(model4, iq.data.second)
+ plot(iq.data.second$ppvt, second_predicted, xlab = "observed", ylab = "predicted")
+```
+
+![](qi_partd.png)
+
+The model predicted using the first half of the data seems like a decent fit for the second half of the data. A deeper look at the residuals would help assess the fit.
+
 
 ##Question4.4
 

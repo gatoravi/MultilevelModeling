@@ -324,6 +324,32 @@ a distinct texture compared to the benign tumors.
 #####1
 For each unit increase in the radius the logit probability of being a tumor increases by 1.05 and for each unit increase in the texture of the tumor the logit probability of being a tumor increases by 0.218
 
+####2
+```
+predicted <- predict(m2)
+error.rate <- mean ((predicted>0.5 & bc$V2==0) | (predicted<.5 & bc$V2==1))
+> error.rate
+[1] 0.1177504
+
+predicted_null <- seq(mean(bc$V2), nrow(bc))
+null.rate <- mean ((predicted_null>0.5 & bc$V2==0) | (predicted_null<.5 & bc$V2==1))
+> null.rate
+[1] 0.629174
+```
+
+
+We can see that the error rate of the model is much lower
+than the null error rate. Hence our model is more accurate
+than the null model.
+
+
+#####3
+```
+Null deviance: 751.44  on 568  degrees of freedom
+Residual deviance: 291.12  on 566  degrees of freedom
+```
+Yes the improvement in fit(reduction in deviance) looks real since it is much more than expected difference of 1 if it's just due to noise.
+
 #####4
 ```
 test <- data.frame(V3 = c(7, 9, 220), V4 = c(6, 11, 12))

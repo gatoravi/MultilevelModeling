@@ -114,7 +114,7 @@ From the regression lines it is seen that for the cases with no high school comp
  plot(iq.data.second$ppvt, second_predicted, xlab = "observed", ylab = "predicted")
 ```
 
-![](qi_partd.png)
+![](q1_partd.png)
 
 The model predicted using the first half of the data seems like a decent fit for the second half of the data. A deeper look at the residuals would help assess the fit.
 

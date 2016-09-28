@@ -1,0 +1,47 @@
+---
+title: "HW3"
+author: "Avinash Ramu"
+date: "September 25, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Q11.4
+###A 
+Let's use a random sample of 10 patients since 250 is a large number to display
+```{r q1_1}
+require(ggplot2)
+cd4 <- read.table("dat/allvar.csv", head = T, sep = ",")
+cd4_subset <- cd4[cd4$newpid %in% sample(cd4$newpid, 10), ]
+cd4_subset$newpid <- as.factor(cd4_subset$newpid)
+(plot1 <- ggplot(cd4_subset,aes(x=visage, y=sqrt(CD4PCT))) + geom_point() + facet_wrap(~newpid))
+```
+
+###B
+Print the models fit to the ten patients
+```{r q1_2}
+require(gridExtra)
+plots <- c()
+cd4_splits <- split(cd4_subset, cd4_subset$newpid)
+for (i in 1:length(cd4_splits)) {
+  lm1 = lm(sqrt(CD4PCT) ~ visage, data = cd4_splits[[i]])
+  coeffs <- lm1$coeff
+  plot1 <- ggplot(data = cd4_splits[[i]]) + geom_abline(slope = coeffs[2], intercept = coeffs[1]) + geom_point(aes(x = visage, y = sqrt(CD4PCT)))
+  print(plot1)
+}
+
+```
+
+###C
+
+
+
+## Q12.2
+
+
+## Q12.5
+
+

@@ -9,39 +9,84 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+```{r prelude, include=FALSE}
+library(ggplot2)
+library(lme4)
+library(arm)
+```
+
 ## Q11.4
 ###A 
-Let's use a random sample of 10 patients since 250 is a large number to display
+Let's use a random sample of 10 patients to plot since 250 is a large number to display
 ```{r q1_1}
-require(ggplot2)
+
 cd4 <- read.table("dat/allvar.csv", head = T, sep = ",")
+cd4$time <- cd4$visage - cd4$baseage
 cd4_subset <- cd4[cd4$newpid %in% sample(cd4$newpid, 10), ]
-cd4_subset$newpid <- as.factor(cd4_subset$newpid)
-(plot1 <- ggplot(cd4_subset,aes(x=visage, y=sqrt(CD4PCT))) + geom_point() + facet_wrap(~newpid))
+cd4$newpid <- as.factor(cd4$newpid)
+(plot1 <- ggplot(cd4_subset,aes(x=time, y=sqrt(CD4PCT))) + geom_point() + facet_wrap(~newpid))
 ```
 
 ###B
 Print the models fit to the ten patients
 ```{r q1_2}
-require(gridExtra)
-plots <- c()
 cd4_splits <- split(cd4_subset, cd4_subset$newpid)
 for (i in 1:length(cd4_splits)) {
-  lm1 = lm(sqrt(CD4PCT) ~ visage, data = cd4_splits[[i]])
+  lm1 = lm(sqrt(CD4PCT) ~ time, data = cd4_splits[[i]])
   coeffs <- lm1$coeff
-  plot1 <- ggplot(data = cd4_splits[[i]]) + geom_abline(slope = coeffs[2], intercept = coeffs[1]) + geom_point(aes(x = visage, y = sqrt(CD4PCT)))
+  plot1 <- ggplot(data = cd4_splits[[i]]) + geom_abline(slope = coeffs[2], intercept = coeffs[1]) + geom_point(aes(x = time, y = sqrt(CD4PCT)))
   print(plot1)
 }
 
 ```
 
 ###C
+Setup a model in which the treatment and age affect outcome
+```{r q1_3}
 
+lm1 = lm(sqrt(CD4PCT) ~ treatmnt + time + factor(newpid) - 1, data = cd4)
+#print(summary(lm1))
+```
+The coefficient for patient 31 is 0.70309, we can fit this to that patients data
+and set this coefficient as the outcome variable to get group level alphas and betas.
+```{r q1_3_2}
+patient_31 <- cd4[cd4$newpid == 31, ]
+```
 
 
 ## Q12.2
+###A
+```{r q2_1}
+lmer1 <- lmer(sqrt(CD4PCT) ~ time + (1|newpid), data=cd4)
+print(summary(lmer1))
+```
+The coefficient for time is -0.36609 with a SE of 0.05399, the coefficient is less than
+zero in the +/- 2 * SE interval hence significant. This indicates a decrease in CD4PCT
+with time. The intercepts vary by patient.
+
+
+###B
+```{r q2_2}
+lmer2 <- lmer(sqrt(CD4PCT) ~ time + (treatmnt + baseage | newpid), data=cd4)
+summary(lmer2)
+```
+The coefficient for time is still the same as part A and indicates a decrease in CD4PCT with time. Note - The model fails to converge. The variance of the treatment and baseage coefficients for the different groups is close to zero. This is indicates that the treatment and baseage have a similar effect across groups.
+
+###C
+```{r q2_2_2}
+intercepts <- fixef(lmer2)[1] + ranef(lmer2)$newpid[,1]
+slope1 <- ranef(lmer2)$newpid[,2] #slope for treatmnt
+slope2 <- ranef(lmer2)$newpid[,3] #slope for baseage
+
+```
 
 
 ## Q12.5
-
-
+```{r q3_1}
+radon <- read.table("dat/mn-radon-2.txt")
+head(radon)
+lmer1 <- lmer(log.radon ~ 1 + (1 + county_sample_size | county), data = radon)
+summary(lmer1)
+#coef(lmer1)
+```

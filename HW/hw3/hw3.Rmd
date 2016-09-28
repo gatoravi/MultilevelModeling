@@ -2,7 +2,7 @@
 title: "HW3"
 author: "Avinash Ramu"
 date: "September 25, 2016"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -90,3 +90,5 @@ lmer1 <- lmer(log.radon ~ 1 + (1 + county_sample_size | county), data = radon)
 summary(lmer1)
 #coef(lmer1)
 ```
+The county sample size has a very small sigma compared to the residual sigma, this grouping
+doesn't seem to help the model a lot.

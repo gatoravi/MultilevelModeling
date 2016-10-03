@@ -1,0 +1,71 @@
+---
+title: "HW4"
+author: "Avinash Ramu"
+date: "October 2, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r prelude, include=FALSE}
+library(ggplot2)
+library(lme4)
+library(arm)
+```
+##13.2
+```
+Models for adjusting individual ratings: a committee of 10 persons is evaluating
+100 job applications. Each person on the committee reads 30 applications
+(structured so that each application is read by three people) and gives each a
+numerical rating between 1 and 10.
+(a) It would be natural to rate the applications based on their combined scores;
+however, there is a worry that different raters use different standards, and we
+would like to correct for this. Set up a model for the ratings (with parameters
+for the applicants and the raters).
+(b) It is possible that some persons on the committee show more variation than
+others in their ratings. Expand your model to allow for this.
+```
+
+###A
+
+###B
+$$\alpha \beta = \alpha + 1$$
+
+
+##13.4
+```
+Models with unequal variances: the folder age.guessing contains a dataset from
+Gelman and Nolan (2002) from a classroom demonstration in which 10 groups
+of students guess the ages of 10 different persons based on photographs. The
+dataset also includes the true ages of the people in the photographs.
+Set up a non-nested model to these data, including a coefficient for each of the
+persons in the photos (indicating their apparent age), a coefficient for each of
+the 10 groups (indicating potential systematic patterns of groups guessing high
+or low), and a separate error variance for each group (so that some groups are
+more consistent than others).
+```
+
+##13.5
+```
+Return to the CD4 data introduced from Exercise 11.4.
+(a) Extend the model in Exercise 12.2 to allow for varying slopes for the time
+predictor.
+(b) Next fit a model that does not allow for varying slopes but does allow for
+different coefficients for each time point (rather than fitting the linear trend).
+(c) Compare the results of these models both numerically and graphically.
+```
+###A
+
+```
+lmer2 <- lmer(sqrt(CD4PCT) ~ time + (time + treatmnt + baseage | newpid), data=cd4)
+```
+
+###B
+```
+Make time a factor here:
+lmer2 <- lmer(sqrt(CD4PCT) ~ time + (time + treatmnt + baseage | newpid), data=cd4)
+```
+
+###C

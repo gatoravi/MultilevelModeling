@@ -47,6 +47,9 @@ or low), and a separate error variance for each group (so that some groups are
 more consistent than others).
 ```
 
+`age <- read.table("age.guessing.csv", row.names=1, head = T, sep = ",")`
+
+
 ##13.5
 ```
 Return to the CD4 data introduced from Exercise 11.4.

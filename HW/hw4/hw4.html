@@ -153,6 +153,7 @@ persons in the photos (indicating their apparent age), a coefficient for each of
 the 10 groups (indicating potential systematic patterns of groups guessing high
 or low), and a separate error variance for each group (so that some groups are
 more consistent than others).</code></pre>
+<p><code>age &lt;- read.table(&quot;age.guessing.csv&quot;, row.names=1, head = T, sep = &quot;,&quot;)</code></p>
 </div>
 <div id="section-2" class="section level2">
 <h2>13.5</h2>
@@ -164,9 +165,12 @@ different coefficients for each time point (rather than fitting the linear trend
 (c) Compare the results of these models both numerically and graphically.</code></pre>
 <div id="a-1" class="section level3">
 <h3>A</h3>
+<pre><code>lmer2 &lt;- lmer(sqrt(CD4PCT) ~ time + (time + treatmnt + baseage | newpid), data=cd4)</code></pre>
 </div>
 <div id="b-1" class="section level3">
 <h3>B</h3>
+<pre><code>Make time a factor here:
+lmer2 &lt;- lmer(sqrt(CD4PCT) ~ time + (time + treatmnt + baseage | newpid), data=cd4)</code></pre>
 </div>
 <div id="c" class="section level3">
 <h3>C</h3>

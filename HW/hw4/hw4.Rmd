@@ -29,10 +29,19 @@ others in their ratings. Expand your model to allow for this.
 ```
 
 ###A
+$$rating = \beta_0 + \beta_1 applicant + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_3 + .... + \beta_{10} x_{10}$$
+
+x_1, x_2 ..  x_10 are set to 0/1 depending on if committee_member1, 2 .. 10 are involved.
+Every individual gets his/her own coefficient, this could be combined into the intercept if
+each individual is rated only once it could reflect the mean score for that individual.
 
 ###B
-$$\alpha \beta = \alpha + 1$$
 
+$$ rating = \beta_0 + \beta_1 applicant + \beta_{j1[i]}  x_1 + \beta_{j2[i]}  x_2 + \beta_{j3[i]} x_3 $$
+
+Here J1, J2 and J3 are the coefficients for the first, second and third committee member. Each committee member
+has a group consisting of all his scores. The variance of each commitee member is reflected in his/her group
+scores.
 
 ##13.4
 ```
@@ -47,7 +56,19 @@ or low), and a separate error variance for each group (so that some groups are
 more consistent than others).
 ```
 
-`age <- read.table("age.guessing.csv", row.names=1, head = T, sep = ",")`
+$$y_i = 1 + true-age +  (1 | person) + (1 | group)$$
+
+
+```{r q2_1}
+age <- read.table("age.guessing.transformed.csv", head = T, sep = "\t")
+head(age)
+lmer1 <- lmer(y ~ 1 +  (1 | person) + (1 | group), data = age)
+display(lmer1)
+```
+
+Grouping by person explains a std-dev of 6.39 while grouping by the group explains
+a variance of zero and hence can be removed. There does not appear to be a group
+specific pattern of guessing.
 
 
 ##13.5
@@ -60,15 +81,47 @@ different coefficients for each time point (rather than fitting the linear trend
 (c) Compare the results of these models both numerically and graphically.
 ```
 ###A
-
-```
-lmer2 <- lmer(sqrt(CD4PCT) ~ time + (time + treatmnt + baseage | newpid), data=cd4)
+ 
+$$\sqrt{CD4PCT} = \beta_0 + \beta_1 time + \beta_{j1[i]} time + \beta_{j2[i]} treatment + \beta_{j3[i]} baseage$$
+```{r q3_1}
+cd4 <- read.table("../hw3/dat/allvar.csv", head = T, sep = ",")
+cd4$time <- cd4$visage - cd4$baseage
+lmer2 <- lmer(sqrt(CD4PCT) ~ time + (time + treatmnt + baseage | newpid), data = cd4)
+display(lmer2)
+a_hat_lmer2 <- fixef(lmer2)[1]  + ranef(lmer2)$newpid[1] + ranef(lmer2)$newpid[2]*cd4$time + ranef(lmer2)$newpid[3] * cd4$treatmnt + ranef(lmer2)$newpid[4] * cd4$baseage
+b_hat_lmer2 <- fixef(lmer2)[2]
 ```
 
 ###B
-```
-Make time a factor here:
-lmer2 <- lmer(sqrt(CD4PCT) ~ time + (time + treatmnt + baseage | newpid), data=cd4)
+
+$$\sqrt{CD4PCT} = \beta_0 + \beta_1 time  + \beta_{j1[i]} treatment + \beta_{j2[i]} baseage$$
+```{r q3_2}
+#Make time a factor here:
+cd4$newtime <- as.factor(round(cd4$time, 1))
+lmer3 <- lmer(sqrt(CD4PCT) ~ newtime + (treatmnt + baseage | newpid), data=cd4)
+display(lmer3)
 ```
 
 ###C
+In terms of the residuals both models are pretty similar 0.72 vs 0.78. The coefficient for time in the model in 13.5 A is
+-0.37 and is significant. The coefficients for time in model 13.5 B is negative mostly and is positive at two time-points.
+
+In the model 13.5A the coefficients for time are significant in the fixed effects indicating a decrease in CD4PCT with time.
+At the group level, time treatment and age contribute towards explaining the residual variance.
+
+In the model 13.5B, in the fixed effects the coefficients of time are not significant sometimes and significant sometimes probably reflecting the number of samples at these time points. At the group level, treatment and age contribute towards explaining the residual variance and should be retained at the group level.
+
+Plotting the results of the models for a sample of 8 patients.
+```{r q3_3}
+a_hat_lmer3 <- fixef(lmer2)[1]  + ranef(lmer2)$newpid[1] + ranef(lmer2)$newpid[2] * cd4$treatmnt + ranef(lmer2)$newpid[3] * cd4$baseage 
+b_hat_lmer3 <- fixef(lmer3)[2]
+
+subset_index <- sample(cd4$newpid, 8, replace=F)
+par(mfrow = c(2, 4))
+for (j in subset_index){
+  cd4_subset = cd4[cd4$newpid == j, ]
+  plot(cd4_subset$time, sqrt(cd4_subset$CD4PCT), xlab = "time", ylab = "sqrt(CD4PCT)")
+  curve(a_hat_lmer2[j,] + b_hat_lmer2*x, lty=3, lwd=2, col="forestgreen", add=TRUE)
+  curve(a_hat_lmer3[j,] + b_hat_lmer3*x, lty=3, lwd=2, col="red", add=TRUE)
+}
+```

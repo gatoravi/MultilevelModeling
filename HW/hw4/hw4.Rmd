@@ -113,7 +113,7 @@ In the model 13.5B, in the fixed effects the coefficients of time are not signif
 
 Plotting the results of the models for a sample of 8 patients.
 ```{r q3_3}
-a_hat_lmer3 <- fixef(lmer2)[1]  + ranef(lmer2)$newpid[1] + ranef(lmer2)$newpid[2] * cd4$treatmnt + ranef(lmer2)$newpid[3] * cd4$baseage 
+a_hat_lmer3 <- fixef(lmer3)[1]  + ranef(lmer3)$newpid[1] + ranef(lmer3)$newpid[2] * cd4$treatmnt + ranef(lmer3)$newpid[3] * cd4$baseage 
 b_hat_lmer3 <- fixef(lmer3)[2]
 
 subset_index <- sample(cd4$newpid, 8, replace=F)

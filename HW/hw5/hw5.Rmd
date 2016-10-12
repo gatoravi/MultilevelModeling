@@ -19,7 +19,7 @@ library(foreign)
 ## Q14.5
 ###A
 
-dec ~ attr + sinc + intel + fun + amb + shar
+$$Pr(dec = 1) = logit^{-1}(\beta_0 + \beta_1 attr + \beta_2 sinc + \beta_3 intel + \beta_4 fun + \beta_5 amb + \beta_6 shar)$$
 
 ```{r q1_1}
 sd <- read.csv("speed_dating.csv", head = T)
@@ -29,22 +29,36 @@ fit.1 <- glm (dec ~ attr + sinc + intel + fun + amb + shar, family=binomial(link
 summary(fit.1)
 ```
 
+Attr, fun and shar have a positive coefficient and increase the chance of a repeat-date. The coefficients are significant. sinc and amb also have significant coefficients and reduce the chance of a repeat date.
+
+A 1 point increase in attractiveness increases the probability of a repeat date by 14%
+A 1 point increase in fun increases probability of repeat date by about 5.5%
+A 1 point increase in shar increases probability of a repeat date by about 3%
+A 1 point increase in sinc reduces probability of a repeat date by about 1%
+A 1 point increase in amb reduces probability of a repeat date  by about 2.7%
+
 ###B
 Add a explanatory variable `iid`
-dec ~ attr + sinc + interl + fun + amb + shar + iid
+
+$$Pr(dec = 1) = logit^{-1}(\beta_0 + \beta_1 attr + \beta_2 sinc + \beta_3 intel + \beta_4 fun + \beta_5 amb + \beta_6 shar + \beta_7 iid)$$
+
 ```{r q1_2}
 fit.2 <- glm (dec ~ attr + sinc + intel + fun + amb + shar + iid, family=binomial(link="logit"))
 summary(fit.2)
 ```
+The coefficients are similar to the previous model. The rater does not have a significant coefficient.
 
 ###C
 Add a explanatory variable `pid`
-dec ~ attr + sinc + interl + fun + amb + shar + iid + pid
+$$Pr(dec = 1) = logit^{-1}(\beta_0 + \beta_1 attr + \beta_2 sinc + \beta_3 intel + \beta_4 fun + \beta_5 amb + \beta_6 shar + \beta_7 iid + \beta_8 pid)$$
 
 ```{r q1_3}
 fit.3 <- glm (dec ~ attr + sinc + intel + fun + amb + shar + iid + pid, family=binomial(link="logit"))
 summary(fit.3)
 ```
+
+Both the rater and the person being rated now have significant coefficients. This indicates that certain raters have
+preferences for certain kinds of dates.
 
 ## Q14.6
 
@@ -66,6 +80,8 @@ for (iid1 in some_iids) {
 ```
 
 
+The average predictor does not come out to be significant for either of the raters, we appear
+to lose information by averaging over all the predictors.
 
 ###B
 Vary the intercept and coefficients by group of the rater.
@@ -79,13 +95,17 @@ display(fit.lmer1)
 
 
 ##15.1
+$$presvote\_intent = \beta_0 + \beta_1 gender + \beta_2 race + \beta_3 age + \beta_4 educ1 + \beta_5 income + \beta_6 religion + \alpha_{j[i]}$$
 
 ##15.2
 ###A
+$$presvote\_intent = \beta_0 + \beta_1 gender + \beta_2 race + \beta_3 age + \beta_4 educ1 + \beta_5 income + \beta_6 religion + \alpha_{j[i]} + \beta_{7j[i]} ideology$$
 
 ###B
 ```{r q4_2}
 nes <- read.dta("nes5200_processed_voters_realideo.dta")
-fit.lmer1 <- lmer( presvote_intent ~ 1 + gender + race + age + educ1 + income + religion + (1 + ideology | state), data = nes)
-summary(nes$vote)
+attach(nes)
+nes$presvote_intent <- as.numeric(nes$presvote_intent)
+fit.lmer1 <- lmer( presvote_intent ~ 1 + gender + race + age + educ1 + income + religion + (1 + real_ideo | state), data = nes)
+summary(fit.lmer1)
 ```

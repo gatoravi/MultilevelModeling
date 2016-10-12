@@ -127,7 +127,7 @@ $(document).ready(function () {
 <h2>Q14.5</h2>
 <div id="a" class="section level3">
 <h3>A</h3>
-<p>dec ~ attr + sinc + intel + fun + amb + shar</p>
+<p><span class="math display">\[Pr(dec = 1) = logit^{-1}(\beta_0 + \beta_1 attr + \beta_2 sinc + \beta_3 intel + \beta_4 fun + \beta_5 amb + \beta_6 shar)\]</span></p>
 <pre class="r"><code>sd &lt;- read.csv(&quot;speed_dating.csv&quot;, head = T)
 sd[is.na(sd)] &lt;- 0
 attach(sd)
@@ -163,7 +163,7 @@ summary(fit.1)</code></pre>
 </div>
 <div id="b" class="section level3">
 <h3>B</h3>
-<p>Add a explanatory variable <code>iid</code> dec ~ attr + sinc + interl + fun + amb + shar + iid</p>
+<p>Add a explanatory variable <code>iid</code> <span class="math display">\[Pr(dec = 1) = logit^{-1}(\beta_0 + \beta_1 attr + \beta_2 sinc + \beta_3 intel + \beta_4 fun + \beta_5 amb + \beta_6 shar + \beta_7 iid)\]</span></p>
 <pre class="r"><code>fit.2 &lt;- glm (dec ~ attr + sinc + intel + fun + amb + shar + iid, family=binomial(link=&quot;logit&quot;))
 summary(fit.2)</code></pre>
 <pre><code>## 
@@ -198,7 +198,7 @@ summary(fit.2)</code></pre>
 </div>
 <div id="c" class="section level3">
 <h3>C</h3>
-<p>Add a explanatory variable <code>pid</code> dec ~ attr + sinc + interl + fun + amb + shar + iid + pid</p>
+<p>Add a explanatory variable <code>pid</code> <span class="math display">\[Pr(dec = 1) = logit^{-1}(\beta_0 + \beta_1 attr + \beta_2 sinc + \beta_3 intel + \beta_4 fun + \beta_5 amb + \beta_6 shar + \beta_7 iid + \beta_8 pid)\]</span></p>
 <pre class="r"><code>fit.3 &lt;- glm (dec ~ attr + sinc + intel + fun + amb + shar + iid + pid, family=binomial(link=&quot;logit&quot;))
 summary(fit.3)</code></pre>
 <pre><code>## 
@@ -251,21 +251,42 @@ for (iid1 in some_iids) {
 ## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
 ## 
 ## Deviance Residuals: 
-##      Min        1Q    Median        3Q       Max  
-## -1.23062  -0.39862  -0.21196  -0.07303   2.04935  
+##     Min       1Q   Median       3Q      Max  
+## -1.7001  -0.6485  -0.5240   1.1378   1.5457  
 ## 
 ## Coefficients:
 ##                    Estimate Std. Error z value Pr(&gt;|z|)  
-## (Intercept)         -22.905     12.152  -1.885   0.0595 .
-## sd_subset$newscore    3.140      1.749   1.795   0.0726 .
+## (Intercept)         -5.0087     2.4106  -2.078   0.0377 *
+## sd_subset$newscore   0.9278     0.5166   1.796   0.0725 .
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 15.4425  on 15  degrees of freedom
-## Residual deviance:  7.5402  on 14  degrees of freedom
-## AIC: 11.54
+##     Null deviance: 25.127  on 20  degrees of freedom
+## Residual deviance: 21.154  on 19  degrees of freedom
+## AIC: 25.154
+## 
+## Number of Fisher Scoring iterations: 4
+## 
+## 
+## Call:
+## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.0635  -0.5513  -0.2158   0.2271   1.8651  
+## 
+## Coefficients:
+##                    Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept)         -29.533     19.669  -1.502    0.133
+## sd_subset$newscore    3.816      2.584   1.477    0.140
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 12.2173  on 9  degrees of freedom
+## Residual deviance:  7.0773  on 8  degrees of freedom
+## AIC: 11.077
 ## 
 ## Number of Fisher Scoring iterations: 6
 ## 
@@ -274,44 +295,44 @@ for (iid1 in some_iids) {
 ## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
 ## 
 ## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.5106  -0.1651  -0.0048   0.2987   1.6112  
+##      Min        1Q    Median        3Q       Max  
+## -1.23414  -0.27904  -0.11068  -0.01715   1.94744  
 ## 
 ## Coefficients:
 ##                    Estimate Std. Error z value Pr(&gt;|z|)  
-## (Intercept)         -24.113     14.585  -1.653   0.0983 .
-## sd_subset$newscore    3.470      2.082   1.667   0.0955 .
+## (Intercept)         -18.528      9.825  -1.886   0.0593 .
+## sd_subset$newscore    2.239      1.223   1.831   0.0671 .
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 24.435  on 19  degrees of freedom
-## Residual deviance: 11.314  on 18  degrees of freedom
-## AIC: 15.314
+##     Null deviance: 20.862  on 21  degrees of freedom
+## Residual deviance: 11.286  on 20  degrees of freedom
+## AIC: 15.286
 ## 
-## Number of Fisher Scoring iterations: 8
-## 
-## 
+## Number of Fisher Scoring iterations: 7</code></pre>
+<pre><code>## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
+<pre><code>## 
 ## Call:
 ## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
 ## 
 ## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -0.9998  -0.4964  -0.3658  -0.3131   2.2101  
+##      Min        1Q    Median        3Q       Max  
+## -1.28778  -0.19471  -0.05958  -0.03084   1.64861  
 ## 
 ## Coefficients:
 ##                    Estimate Std. Error z value Pr(&gt;|z|)
-## (Intercept)         -13.541      8.283  -1.635    0.102
-## sd_subset$newscore    1.918      1.313   1.461    0.144
+## (Intercept)         -60.361     40.580  -1.487    0.137
+## sd_subset$newscore    7.907      5.365   1.474    0.141
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 17.225  on 20  degrees of freedom
-## Residual deviance: 14.745  on 19  degrees of freedom
-## AIC: 18.745
+##     Null deviance: 16.2202  on 17  degrees of freedom
+## Residual deviance:  5.5374  on 16  degrees of freedom
+## AIC: 9.5374
 ## 
-## Number of Fisher Scoring iterations: 5
+## Number of Fisher Scoring iterations: 9
 ## 
 ## 
 ## Call:
@@ -319,82 +340,118 @@ for (iid1 in some_iids) {
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -1.8684  -0.5876  -0.3279   0.8304   1.6623  
-## 
-## Coefficients:
-##                    Estimate Std. Error z value Pr(&gt;|z|)  
-## (Intercept)         -2.8965     1.3698  -2.114   0.0345 *
-## sd_subset$newscore   0.7216     0.3427   2.105   0.0353 *
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 25.008  on 18  degrees of freedom
-## Residual deviance: 18.288  on 17  degrees of freedom
-## AIC: 22.288
-## 
-## Number of Fisher Scoring iterations: 5
-## 
-## 
-## Call:
-## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.2514  -0.5651  -0.1139   0.1585   1.8728  
+## -1.3876  -0.8976   0.1867   1.0972   1.4610  
 ## 
 ## Coefficients:
 ##                    Estimate Std. Error z value Pr(&gt;|z|)
-## (Intercept)         -35.411     22.451  -1.577    0.115
-## sd_subset$newscore    5.207      3.364   1.548    0.122
+## (Intercept)         -6.9597     4.3827  -1.588    0.112
+## sd_subset$newscore   1.3530     0.8557   1.581    0.114
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 16.7515  on 13  degrees of freedom
-## Residual deviance:  8.2007  on 12  degrees of freedom
-## AIC: 12.201
+##     Null deviance: 24.731  on 17  degrees of freedom
+## Residual deviance: 19.370  on 16  degrees of freedom
+## AIC: 23.37
 ## 
-## Number of Fisher Scoring iterations: 6</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
 </div>
 <div id="b-1" class="section level3">
 <h3>B</h3>
 <p>Vary the intercept and coefficients by group of the rater.</p>
-<pre class="r"><code>fit.lmer1 &lt;- lmer(dec ~ 1 + (1 + attr + sinc + intel + fun + amb + shar | iid), data=sd)</code></pre>
-<pre><code>## Warning in optwrap(optimizer, devfun, getStart(start, rho$lower, rho$pp), :
-## convergence code 1 from bobyqa: bobyqa -- maximum number of function
-## evaluations exceeded</code></pre>
+<pre class="r"><code>#fit.lmer1 &lt;- lmer(dec ~ 1 + (1 + attr + sinc + intel + fun + amb + shar | iid), data=sd)
+#display(fit.lmer1)</code></pre>
+</div>
+<div id="c-1" class="section level3">
+<h3>C</h3>
+</div>
+</div>
+<div id="section" class="section level2">
+<h2>15.1</h2>
+<p><span class="math display">\[presvote\_intent = \beta_0 + \beta_1 gender + \beta_2 race + \beta_3 age + \beta_4 educ1 + \beta_5 income + \beta_6 religion + \alpha_{j[i]}\]</span></p>
+</div>
+<div id="section-1" class="section level2">
+<h2>15.2</h2>
+<div id="a-2" class="section level3">
+<h3>A</h3>
+<p><span class="math display">\[presvote\_intent = \beta_0 + \beta_1 gender + \beta_2 race + \beta_3 age + \beta_4 educ1 + \beta_5 income + \beta_6 religion + \alpha_{j[i]} + \beta_{7j[i]} ideology\]</span></p>
+</div>
+<div id="b-2" class="section level3">
+<h3>B</h3>
+<pre class="r"><code>nes &lt;- read.dta(&quot;nes5200_processed_voters_realideo.dta&quot;)
+attach(nes)</code></pre>
+<pre><code>## The following objects are masked from sd:
+## 
+##     age, gender, income, race</code></pre>
+<pre class="r"><code>nes$presvote_intent &lt;- as.numeric(nes$presvote_intent)
+fit.lmer1 &lt;- lmer( presvote_intent ~ 1 + gender + race + age + educ1 + income + religion + (1 + real_ideo | state), data = nes)</code></pre>
 <pre><code>## Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control
 ## $checkConv, : unable to evaluate scaled gradient</code></pre>
 <pre><code>## Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control
 ## $checkConv, : Model failed to converge: degenerate Hessian with 1 negative
 ## eigenvalues</code></pre>
-<pre class="r"><code>display(fit.lmer1)</code></pre>
-<pre><code>## lmer(formula = dec ~ 1 + (1 + attr + sinc + intel + fun + amb + 
-##     shar | iid), data = sd)
-## coef.est  coef.se 
-##     0.37     0.01 
+<pre class="r"><code>summary(fit.lmer1)</code></pre>
+<pre><code>## Linear mixed model fit by REML ['lmerMod']
+## Formula: presvote_intent ~ 1 + gender + race + age + educ1 + income +  
+##     religion + (1 + real_ideo | state)
+##    Data: nes
 ## 
-## Error terms:
-##  Groups   Name        Std.Dev. Corr                                
-##  iid      (Intercept) 1.04                                         
-##           attr        0.11     -0.90                               
-##           sinc        0.02     -0.01 -0.17                         
-##           intel       0.02     -0.48  0.18  0.59                   
-##           fun         0.05     -0.87  0.74 -0.19  0.59             
-##           amb         0.01      0.84 -0.90 -0.09 -0.19 -0.55       
-##           shar        0.05     -0.64  0.53 -0.29  0.13  0.58 -0.55 
-##  Residual             0.34</code></pre>
-<pre><code>## Warning in optwrap(optimizer, devfun, x@theta, lower = x@lower, calc.derivs
-## = TRUE, : convergence code 1 from bobyqa: bobyqa -- maximum number of
-## function evaluations exceeded</code></pre>
-<pre><code>## ---
-## number of obs: 8378, groups: iid, 551
-## AIC = 8607.7, DIC = 8532.8
-## deviance = 8540.2</code></pre>
-</div>
-<div id="c-1" class="section level3">
-<h3>C</h3>
+## REML criterion at convergence: 13487
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -2.1033 -0.8214  0.0847  0.5387  4.0550 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev. Corr
+##  state    (Intercept) 0.00000  0.0000       
+##           real_ideo   0.01651  0.1285    NaN
+##  Residual             0.30288  0.5503       
+## Number of obs: 8023, groups:  state, 48
+## 
+## Fixed effects:
+##                                                    Estimate Std. Error
+## (Intercept)                                       2.1673951  0.0443371
+## gender2. female                                   0.0123553  0.0125204
+## race2. black                                     -0.4131829  0.0229532
+## race3. asian                                      0.0440938  0.0623164
+## race4. native american                           -0.1119647  0.0420101
+## race5. hispanic                                  -0.1350478  0.0342384
+## age                                              -0.0010139  0.0004003
+## educ12. high school (12 grades or fewer, incl    -0.0011529  0.0286476
+## educ13. some college(13 grades or more,but no    -0.0021672  0.0302734
+## educ14. college or advanced degree (no cases     -0.0416001  0.0305119
+## income2. 17 to 33 percentile                      0.0145059  0.0254252
+## income3. 34 to 67 percentile                      0.0483680  0.0224331
+## income4. 68 to 95 percentile                      0.0622777  0.0230662
+## income5. 96 to 100 percentile                     0.1599957  0.0319422
+## religion2. catholic (roman catholic)             -0.0699287  0.0157068
+## religion3. jewish                                -0.2269536  0.0390425
+## religion4. other and none (also includes dk pref -0.1333591  0.0222269
+##                                                  t value
+## (Intercept)                                        48.88
+## gender2. female                                     0.99
+## race2. black                                      -18.00
+## race3. asian                                        0.71
+## race4. native american                             -2.67
+## race5. hispanic                                    -3.94
+## age                                                -2.53
+## educ12. high school (12 grades or fewer, incl      -0.04
+## educ13. some college(13 grades or more,but no      -0.07
+## educ14. college or advanced degree (no cases       -1.36
+## income2. 17 to 33 percentile                        0.57
+## income3. 34 to 67 percentile                        2.16
+## income4. 68 to 95 percentile                        2.70
+## income5. 96 to 100 percentile                       5.01
+## religion2. catholic (roman catholic)               -4.45
+## religion3. jewish                                  -5.81
+## religion4. other and none (also includes dk pref   -6.00</code></pre>
+<pre><code>## 
+## Correlation matrix not shown by default, as p = 17 &gt; 12.
+## Use print(x, correlation=TRUE)  or
+##   vcov(x)     if you need it</code></pre>
+<pre><code>## convergence code: 0
+## unable to evaluate scaled gradient
+## Model failed to converge: degenerate  Hessian with 1 negative eigenvalues</code></pre>
 </div>
 </div>
 

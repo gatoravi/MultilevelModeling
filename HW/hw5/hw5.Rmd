@@ -1,0 +1,91 @@
+---
+title: "HW5"
+author: "Avinash Ramu"
+date: "October 11, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r prelude, include=FALSE}
+library(ggplot2)
+library(lme4)
+library(arm)
+library(foreign)
+```
+
+## Q14.5
+###A
+
+dec ~ attr + sinc + intel + fun + amb + shar
+
+```{r q1_1}
+sd <- read.csv("speed_dating.csv", head = T)
+sd[is.na(sd)] <- 0
+attach(sd)
+fit.1 <- glm (dec ~ attr + sinc + intel + fun + amb + shar, family=binomial(link="logit"))
+summary(fit.1)
+```
+
+###B
+Add a explanatory variable `iid`
+dec ~ attr + sinc + interl + fun + amb + shar + iid
+```{r q1_2}
+fit.2 <- glm (dec ~ attr + sinc + intel + fun + amb + shar + iid, family=binomial(link="logit"))
+summary(fit.2)
+```
+
+###C
+Add a explanatory variable `pid`
+dec ~ attr + sinc + interl + fun + amb + shar + iid + pid
+
+```{r q1_3}
+fit.3 <- glm (dec ~ attr + sinc + intel + fun + amb + shar + iid + pid, family=binomial(link="logit"))
+summary(fit.3)
+```
+
+## Q14.6
+
+
+###A
+
+I used the average of the six predictors as a explanatory variable. I set the NA's to zero.
+
+```{r q2_1}
+sd$newscore <- (sd$attr + sd$sinc +  sd$intel + sd$fun + sd$amb +  sd$shar)/6
+sd$iid <- as.factor(sd$iid)
+some_iids <- sample(sd$iid, 5)
+for (iid1 in some_iids) {
+  sd_subset <- sd[sd$iid == iid1, ]
+  fit.21 <- glm (sd_subset$dec ~ sd_subset$newscore, family=binomial(link="logit"))
+  print(summary(fit.21))
+}
+
+```
+
+
+
+###B
+Vary the intercept and coefficients by group of the rater.
+
+```{r q2_2}
+fit.lmer1 <- lmer(dec ~ 1 + (1 + attr + sinc + intel + fun + amb + shar | iid), data=sd)
+display(fit.lmer1)
+```
+
+###C
+
+
+##15.1
+
+##15.2
+###A
+
+###B
+```{r q4_2}
+nes <- read.dta("nes5200_processed_voters_realideo.dta")
+fit.lmer1 <- lmer( presvote_intent ~ 1 + gender + race + age + educ1 + income + religion + (1 + ideology | state), data = nes)
+summary(nes$vote)
+```

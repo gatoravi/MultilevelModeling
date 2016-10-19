@@ -124,26 +124,52 @@ $(document).ready(function () {
 
 
 <div id="section" class="section level2">
-<h2>16.1.</h2>
+<h2>16.1</h2>
 <p>Elements of a Bugs model: list the elements of the model on page 370 by category: modeled data, unmodeled data, modeled parameters, unmodeled parameters, derived quantities, and looping indexes (as in Figure 16.4).</p>
+<pre><code>model {
+  for (i in 1:n){
+    y[i] ~ dnorm (y.hat[i], tau.y)
+    y.hat[i] &lt;- a[school[i]] + b*x[i]
+  }
+  b ~ dnorm (0, .0001)
+  tau.y &lt;- pow(sigma.y, -2)
+  sigma.y ~ dunif (0, 100)
+  for (j in 1:J){
+    a[j] ~ dnorm (a.hat[j], tau.a)
+    a.hat[j] &lt;- g.0 + g.1*T[j]
+  }
+  g.0 ~ dnorm (0, .0001)
+  g.1 ~ dnorm (0, .0001)
+  tau.a &lt;- pow(sigma.a, -2)
+  sigma.a ~ dunif (0, 100)
+}</code></pre>
+<ul>
+<li>modeled data - y</li>
+<li>unmodeled data - x, T</li>
+<li>modeled parameters - a</li>
+<li>unmodeled parameters - b, sigma.y, g.0, g.1, sigma.a</li>
+<li>derived quantities - y.hat, tau.y, a.hat, tau.a</li>
+<li>looping indexes - i,j</li>
+</ul>
 </div>
 <div id="section-1" class="section level2">
 <h2>16.2</h2>
-<p>Find all the errors in the following Bugs model:</p>
-<pre class="r"><code>model { Bugs code
+<p>I have corrected the errors in the code below,</p>
+<pre class="r"><code>model { #Bugs code
   for (i in 1:n){
-    y[i] ~ dnorm (a[state[i]] + theta*treat[i] + b*hispanic, tau.y)
+    y[i] ~ dnorm (yhat[i], tau.y)
+    yhat[i] &lt;- a[state[i]] + theta*treat[i] + b*hispanic
   }
   theta ~ dnorm (0, .0001)
   b ~ dnorm (0, 1000)
+  tau.y &lt;- pow (sigma.y, -2)
+  sigma.y &lt;- dunif (0, 100)
   for (j in 1:J){
     a[j] ~ rnorm (mu.a, tau.a^2)
   }
   mu.a ~ dnorm (0, .0001)
   tau.a &lt;- pow (sigma.a, -2)
   sigma.a ~ dunif (0, 100)
-  tau.y &lt;- pow (sigma.y, -2)
-  sigma.y &lt;- dunif (0, 100)
 }</code></pre>
 </div>
 

@@ -39,12 +39,12 @@ model {
   sigma.a ~ dunif (0, 100)
 }
 ```
-modeled data - y 
-unmodeled data - x, T
-modeled parameters - a
-unmodeled parameters - b, sigma.y, g.0, g.1, sigma.a
-derived quantities - y.hat, tau.y, a.hat, tau.a 
-looping indexes - i,j
+- modeled data - y 
+- unmodeled data - x, T
+- modeled parameters - a
+- unmodeled parameters - b, sigma.y, g.0, g.1, sigma.a
+- derived quantities - y.hat, tau.y, a.hat, tau.a 
+- looping indexes - i,j
 
 ##16.2
 I have corrected the errors in the code below,

@@ -1,0 +1,42 @@
+---
+title: "HW6"
+author: "Avinash Ramu"
+date: "October 18, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r prelude, include=FALSE}
+library(ggplot2)
+library(lme4)
+library(arm)
+```
+
+##16.1
+Elements of a Bugs model: list the elements of the model on page 370 by category:
+modeled data, unmodeled data, modeled parameters, unmodeled parameters,
+derived quantities, and looping indexes (as in Figure 16.4).
+
+
+##16.2
+Find all the errors in the following Bugs model:
+```r
+model { Bugs code
+  for (i in 1:n){
+    y[i] ~ dnorm (a[state[i]] + theta*treat[i] + b*hispanic, tau.y)
+  }
+  theta ~ dnorm (0, .0001)
+  b ~ dnorm (0, 1000)
+  for (j in 1:J){
+    a[j] ~ rnorm (mu.a, tau.a^2)
+  }
+  mu.a ~ dnorm (0, .0001)
+  tau.a <- pow (sigma.a, -2)
+  sigma.a ~ dunif (0, 100)
+  tau.y <- pow (sigma.y, -2)
+  sigma.y <- dunif (0, 100)
+}
+```

@@ -66,7 +66,7 @@ preferences for certain kinds of dates.
 ###A
 
 I used the average of the six predictors as a explanatory variable. I set the NA's to zero.
-
+$$Pr(dec_i = 1) = logit^{-1}(\beta_{i0} + \beta_{i1} newscore)$$
 ```{r q2_1}
 sd$newscore <- (sd$attr + sd$sinc +  sd$intel + sd$fun + sd$amb +  sd$shar)/6
 sd$iid <- as.factor(sd$iid)
@@ -85,14 +85,18 @@ to lose information by averaging over all the predictors.
 
 ###B
 Vary the intercept and coefficients by group of the rater.
+$$Pr(dec = 1) = logit^{-1}(\beta_{j0} + \beta_{j1} attr + \beta_{j2} sinc + \beta_{j3} intel + \beta_{j4} fun + \beta_{j5} amb + \beta_{j6} shar + \beta_{j7} iid + \beta_{j8} pid)$$
 
 ```{r q2_2}
-fit.lmer1 <- lmer(dec ~ 1 + (1 + attr + sinc + intel + fun + amb + shar | iid), data=sd)
+fit.lmer1 <- lmer(dec ~ 1 + (1 + attr + sinc + intel + fun + amb + shar | iid), family=binomial(link="logit"), data=sd)
 display(fit.lmer1)
 ```
 
+Attractiveness seems to vary by the rater the most. Other significant predictors that are helpful at the group level are sinc, intel, fun and share. Amb could probably be removed from the grouping based on the SD explained. The raters also have significant intercepts indicating that grouping by rater is a good idea.
+
 ###C
 
+I have included comments under each model. The no-pooling model cannot be interpreted since the average score does not seem to be a  significant predictor. The residual deviance is lowest under the model in 14.6 (B), the multilevel model grouped by the rater. The residual deviance in the model in 14.5 (A) is twice as much as the multilevel model. Grouping by rater seems to give us the best model in this example.
 
 ##15.1
 $$presvote\_intent = \beta_0 + \beta_1 gender + \beta_2 race + \beta_3 age + \beta_4 educ1 + \beta_5 income + \beta_6 religion + \alpha_{j[i]}$$
@@ -109,3 +113,5 @@ nes$presvote_intent <- as.numeric(nes$presvote_intent)
 fit.lmer1 <- lmer( presvote_intent ~ 1 + gender + race + age + educ1 + income + religion + (1 + real_ideo | state), data = nes)
 summary(fit.lmer1)
 ```
+
+The model failed to converge. The real_ideo variable does not seem to show a strong effect of grouping by state. The SD explained by this variable at the group level is a fraction of the residual SD.

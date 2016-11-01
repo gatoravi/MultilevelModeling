@@ -160,10 +160,13 @@ summary(fit.1)</code></pre>
 ## AIC: 8593
 ## 
 ## Number of Fisher Scoring iterations: 5</code></pre>
+<p>Attr, fun and shar have a positive coefficient and increase the chance of a repeat-date. The coefficients are significant. sinc and amb also have significant coefficients and reduce the chance of a repeat date.</p>
+<p>A 1 point increase in attractiveness increases the probability of a repeat date by 14% A 1 point increase in fun increases probability of repeat date by about 5.5% A 1 point increase in shar increases probability of a repeat date by about 3% A 1 point increase in sinc reduces probability of a repeat date by about 1% A 1 point increase in amb reduces probability of a repeat date by about 2.7%</p>
 </div>
 <div id="b" class="section level3">
 <h3>B</h3>
-<p>Add a explanatory variable <code>iid</code> <span class="math display">\[Pr(dec = 1) = logit^{-1}(\beta_0 + \beta_1 attr + \beta_2 sinc + \beta_3 intel + \beta_4 fun + \beta_5 amb + \beta_6 shar + \beta_7 iid)\]</span></p>
+<p>Add a explanatory variable <code>iid</code></p>
+<p><span class="math display">\[Pr(dec = 1) = logit^{-1}(\beta_0 + \beta_1 attr + \beta_2 sinc + \beta_3 intel + \beta_4 fun + \beta_5 amb + \beta_6 shar + \beta_7 iid)\]</span></p>
 <pre class="r"><code>fit.2 &lt;- glm (dec ~ attr + sinc + intel + fun + amb + shar + iid, family=binomial(link=&quot;logit&quot;))
 summary(fit.2)</code></pre>
 <pre><code>## 
@@ -195,6 +198,7 @@ summary(fit.2)</code></pre>
 ## AIC: 8593.9
 ## 
 ## Number of Fisher Scoring iterations: 5</code></pre>
+<p>The coefficients are similar to the previous model. The rater does not have a significant coefficient.</p>
 </div>
 <div id="c" class="section level3">
 <h3>C</h3>
@@ -231,13 +235,14 @@ summary(fit.3)</code></pre>
 ## AIC: 8574.1
 ## 
 ## Number of Fisher Scoring iterations: 5</code></pre>
+<p>Both the rater and the person being rated now have significant coefficients. This indicates that certain raters have preferences for certain kinds of dates.</p>
 </div>
 </div>
 <div id="q14.6" class="section level2">
 <h2>Q14.6</h2>
 <div id="a-1" class="section level3">
 <h3>A</h3>
-<p>I used the average of the six predictors as a explanatory variable. I set the NA’s to zero.</p>
+<p>I used the average of the six predictors as a explanatory variable. I set the NA’s to zero. <span class="math display">\[Pr(dec_i = 1) = logit^{-1}(\beta_{i0} + \beta_{i1} newscore)\]</span></p>
 <pre class="r"><code>sd$newscore &lt;- (sd$attr + sd$sinc +  sd$intel + sd$fun + sd$amb +  sd$shar)/6
 sd$iid &lt;- as.factor(sd$iid)
 some_iids &lt;- sample(sd$iid, 5)
@@ -252,20 +257,43 @@ for (iid1 in some_iids) {
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -1.7001  -0.6485  -0.5240   1.1378   1.5457  
+## -1.3262  -0.6027  -0.1919   0.1888   2.1203  
 ## 
 ## Coefficients:
 ##                    Estimate Std. Error z value Pr(&gt;|z|)  
-## (Intercept)         -5.0087     2.4106  -2.078   0.0377 *
-## sd_subset$newscore   0.9278     0.5166   1.796   0.0725 .
+## (Intercept)         -18.253      9.801  -1.862   0.0626 .
+## sd_subset$newscore    2.480      1.361   1.822   0.0684 .
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 25.127  on 20  degrees of freedom
-## Residual deviance: 21.154  on 19  degrees of freedom
-## AIC: 25.154
+##     Null deviance: 22.493  on 19  degrees of freedom
+## Residual deviance: 15.072  on 18  degrees of freedom
+## AIC: 19.072
+## 
+## Number of Fisher Scoring iterations: 6
+## 
+## 
+## Call:
+## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.6905  -1.0736   0.4363   1.0172   1.6849  
+## 
+## Coefficients:
+##                    Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept)         -4.0784     2.6285  -1.552    0.121  
+## sd_subset$newscore   0.7659     0.4461   1.717    0.086 .
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 27.910  on 20  degrees of freedom
+## Residual deviance: 23.919  on 19  degrees of freedom
+## AIC: 27.919
 ## 
 ## Number of Fisher Scoring iterations: 4
 ## 
@@ -275,91 +303,112 @@ for (iid1 in some_iids) {
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -1.0635  -0.5513  -0.2158   0.2271   1.8651  
-## 
-## Coefficients:
-##                    Estimate Std. Error z value Pr(&gt;|z|)
-## (Intercept)         -29.533     19.669  -1.502    0.133
-## sd_subset$newscore    3.816      2.584   1.477    0.140
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 12.2173  on 9  degrees of freedom
-## Residual deviance:  7.0773  on 8  degrees of freedom
-## AIC: 11.077
-## 
-## Number of Fisher Scoring iterations: 6
-## 
-## 
-## Call:
-## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
-## 
-## Deviance Residuals: 
-##      Min        1Q    Median        3Q       Max  
-## -1.23414  -0.27904  -0.11068  -0.01715   1.94744  
+## -1.8646  -0.9327   0.4672   0.9268   1.3071  
 ## 
 ## Coefficients:
 ##                    Estimate Std. Error z value Pr(&gt;|z|)  
-## (Intercept)         -18.528      9.825  -1.886   0.0593 .
-## sd_subset$newscore    2.239      1.223   1.831   0.0671 .
+## (Intercept)        -10.1384     5.5600  -1.823   0.0682 .
+## sd_subset$newscore   1.8448     0.9875   1.868   0.0618 .
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 20.862  on 21  degrees of freedom
-## Residual deviance: 11.286  on 20  degrees of freedom
-## AIC: 15.286
+##     Null deviance: 28.682  on 20  degrees of freedom
+## Residual deviance: 23.777  on 19  degrees of freedom
+## AIC: 27.777
 ## 
-## Number of Fisher Scoring iterations: 7</code></pre>
-<pre><code>## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
-<pre><code>## 
+## Number of Fisher Scoring iterations: 4
+## 
+## 
+## Call:
+## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
+## 
+## Deviance Residuals: 
+##       1        2        3        4        5        6        7  
+## -0.7615  -0.7615  -0.9780   1.7347  -0.7436   1.3909  -0.7982  
+## 
+## Coefficients:
+##                    Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept)         -2.8368     5.5025  -0.516    0.606
+## sd_subset$newscore   0.3276     0.9195   0.356    0.722
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 8.3758  on 6  degrees of freedom
+## Residual deviance: 8.2500  on 5  degrees of freedom
+## AIC: 12.25
+## 
+## Number of Fisher Scoring iterations: 4
+## 
+## 
 ## Call:
 ## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
 ## 
 ## Deviance Residuals: 
 ##      Min        1Q    Median        3Q       Max  
-## -1.28778  -0.19471  -0.05958  -0.03084   1.64861  
+## -1.74446   0.01176   0.06498   0.44724   1.47572  
 ## 
 ## Coefficients:
-##                    Estimate Std. Error z value Pr(&gt;|z|)
-## (Intercept)         -60.361     40.580  -1.487    0.137
-## sd_subset$newscore    7.907      5.365   1.474    0.141
+##                    Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept)         -15.820      9.756  -1.621   0.1049  
+## sd_subset$newscore    2.931      1.717   1.707   0.0878 .
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 16.2202  on 17  degrees of freedom
-## Residual deviance:  5.5374  on 16  degrees of freedom
-## AIC: 9.5374
+##     Null deviance: 20.450  on 20  degrees of freedom
+## Residual deviance: 11.085  on 19  degrees of freedom
+## AIC: 15.085
 ## 
-## Number of Fisher Scoring iterations: 9
-## 
-## 
-## Call:
-## glm(formula = sd_subset$dec ~ sd_subset$newscore, family = binomial(link = &quot;logit&quot;))
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.3876  -0.8976   0.1867   1.0972   1.4610  
-## 
-## Coefficients:
-##                    Estimate Std. Error z value Pr(&gt;|z|)
-## (Intercept)         -6.9597     4.3827  -1.588    0.112
-## sd_subset$newscore   1.3530     0.8557   1.581    0.114
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 24.731  on 17  degrees of freedom
-## Residual deviance: 19.370  on 16  degrees of freedom
-## AIC: 23.37
-## 
-## Number of Fisher Scoring iterations: 5</code></pre>
+## Number of Fisher Scoring iterations: 7</code></pre>
+<p>The average predictor does not come out to be significant for either of the raters, we appear to lose information by averaging over all the predictors.</p>
 </div>
 <div id="b-1" class="section level3">
 <h3>B</h3>
-<p>Vary the intercept and coefficients by group of the rater.</p>
-<pre class="r"><code>#fit.lmer1 &lt;- lmer(dec ~ 1 + (1 + attr + sinc + intel + fun + amb + shar | iid), data=sd)
-#display(fit.lmer1)</code></pre>
+<p>Vary the intercept and coefficients by group of the rater. <span class="math display">\[Pr(dec = 1) = logit^{-1}(\beta_{j0} + \beta_{j1} attr + \beta_{j2} sinc + \beta_{j3} intel + \beta_{j4} fun + \beta_{j5} amb + \beta_{j6} shar + \beta_{j7} iid + \beta_{j8} pid)\]</span></p>
+<pre class="r"><code>fit.lmer1 &lt;- lmer(dec ~ 1 + (1 + attr + sinc + intel + fun + amb + shar | iid), family=binomial(link=&quot;logit&quot;), data=sd)</code></pre>
+<pre><code>## Warning in lmer(dec ~ 1 + (1 + attr + sinc + intel + fun + amb + shar | :
+## calling lmer with 'family' is deprecated; please use glmer() instead</code></pre>
+<pre><code>## Warning in (function (fn, par, lower = rep.int(-Inf, n), upper =
+## rep.int(Inf, : failure to converge in 10000 evaluations</code></pre>
+<pre><code>## Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control
+## $checkConv, : Model failed to converge with max|grad| = 15.3976 (tol =
+## 0.001, component 1)</code></pre>
+<pre class="r"><code>display(fit.lmer1)</code></pre>
+<pre><code>## lme4::glmer(formula = dec ~ 1 + (1 + attr + sinc + intel + fun + 
+##     amb + shar | iid), data = sd, family = binomial(link = &quot;logit&quot;), 
+##     control = list(optimizer = c(&quot;bobyqa&quot;, &quot;Nelder_Mead&quot;), calc.derivs = TRUE, 
+##         use.last.params = FALSE, restart_edge = FALSE, boundary.tol = 1e-05, 
+##         tolPwrss = 1e-07, compDev = TRUE, nAGQ0initStep = TRUE, 
+##         checkControl = list(check.nobs.vs.rankZ = &quot;ignore&quot;, check.nobs.vs.nlev = &quot;stop&quot;, 
+##             check.nlev.gtreq.5 = &quot;ignore&quot;, check.nlev.gtr.1 = &quot;stop&quot;, 
+##             check.nobs.vs.nRE = &quot;stop&quot;, check.rankX = &quot;message+drop.cols&quot;, 
+##             check.scaleX = &quot;warning&quot;, check.formula.LHS = &quot;stop&quot;, 
+##             check.response.not.const = &quot;stop&quot;), checkConv = list(
+##             check.conv.grad = list(action = &quot;warning&quot;, tol = 0.001, 
+##                 relTol = NULL), check.conv.singular = list(action = &quot;ignore&quot;, 
+##                 tol = 1e-04), check.conv.hess = list(action = &quot;warning&quot;, 
+##                 tol = 1e-06)), optCtrl = list()))
+## coef.est  coef.se 
+##    -1.87     0.30 
+## 
+## Error terms:
+##  Groups   Name        Std.Dev. Corr                                
+##  iid      (Intercept) 11.66                                        
+##           attr         1.16    -0.96                               
+##           sinc         0.16    -0.43  0.37                         
+##           intel        0.21    -0.77  0.69  0.69                   
+##           fun          0.51    -0.90  0.85  0.15  0.59             
+##           amb          0.08     0.71 -0.71 -0.83 -0.90 -0.45       
+##           shar         0.40    -0.79  0.67  0.13  0.66  0.83 -0.38 
+##  Residual              1.00                                        
+## ---
+## number of obs: 8378, groups: iid, 551
+## AIC = 7694.8, DIC = 1217.2
+## deviance = 4427.0</code></pre>
+<p>Attractiveness seems to vary by the rater. The other terms don’t seem to contribute a lot towards the explained SD perhaps indicating that these preferences could be shared amongst raters.</p>
 </div>
 <div id="c-1" class="section level3">
 <h3>C</h3>

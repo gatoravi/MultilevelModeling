@@ -13,6 +13,25 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r q1_1}
+#Use Andrew Stone's code from HW3 to ensure similar pre-processing
+library(lme4)
+library(arm)
+# Loading HIV data
+hiv.data <- read.csv("allvar.csv", header=TRUE)
+# Square root transformation of the CD4PCT
+hiv.data$rootCD4 <- sqrt(hiv.data$CD4PCT)
+# Creation of time variable
+hiv.data$time <- hiv.data$visage - hiv.data$baseage
+# Removing those cases that have NAs for the DV or the time variable
+data.noNA.CD4 <- hiv.data[complete.cases(hiv.data[,4]),]
+data.noNA.CD4 <- data.noNA.CD4[complete.cases(data.noNA.CD4[,11]),]
+# Creating indicators for each of the children
+inddummies <- as.factor(data.noNA.CD4$newpid)
+```
+
+```{r q1_2}
+mlm.1 <- lmer(rootCD4 ~ time + (1 | inddummies), data=data.noNA.CD4)
+display(mlm.1)
 ```
 
 

@@ -16,6 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 #Use Andrew Stone's code from HW3 to ensure similar pre-processing
 library(lme4)
 library(arm)
+library(rjags); library(R2jags)
+
 # Loading HIV data
 hiv.data <- read.csv("allvar.csv", header=TRUE)
 # Square root transformation of the CD4PCT
@@ -32,6 +34,54 @@ inddummies <- as.factor(data.noNA.CD4$newpid)
 ```{r q1_2}
 mlm.1 <- lmer(rootCD4 ~ time + (1 | inddummies), data=data.noNA.CD4)
 display(mlm.1)
+
+n <- nrow(data.noNA.CD4)
+y <- data.noNA.CD4$rootCD4
+time <- data.noNA.CD4$time
+
+# get ind index variable
+ui <- unique(inddummies)
+J <- length(ui)
+ind <- rep (NA, J)
+for (i in 1:J) {
+  ind[inddummies == ui[i]] <- i
+}
+
+
+the.model <- "model{
+  for (i in 1:n){
+    y[i] ~ dnorm (y.hat[i], tau.y)
+    y.hat[i] <- a[ind[i]] + b * time[i]
+  }
+  b ~ dnorm (0, .0001)
+  tau.y <- pow(sigma.y, -2)
+  sigma.y ~ dunif (0, 100)
+  
+  for (j in 1:J){
+    a[j] ~ dnorm (mu.a, tau.a)
+  }
+  mu.a ~ dnorm (0, .0001)
+  tau.a <- pow(sigma.a, -2)
+  sigma.a ~ dunif (0, 100)
+}"
+radon.data <- list ("n", "J", "y", "time", "ind")
+# Defining the initial values that your model's parameters (values you *don't* already know)
+radon.inits <- function (){list(a=rnorm(J), 
+                                b=rnorm(1), 
+                                sigma.y=runif(1), 
+                                sigma.a=runif(1))}
+# Defining which parameters of your model you want JAGS to return to you 
+# In the book (page 366), they are missing "g.0" and "g.1"
+radon.parameters <- c ("a", "b", "sigma.y", "sigma.a")
+# Now, we can actually run the model with the jags() function
+radon.3 <- jags(data=radon.data, 
+                inits=radon.inits, 
+                parameters.to.save=radon.parameters, 
+                model.file=textConnection(the.model), # Note the textConnection() function
+                n.chains=3, 
+                n.iter=5000, 
+                DIC=F)
+radon.3
 ```
 
 

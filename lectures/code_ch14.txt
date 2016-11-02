@@ -1,0 +1,127 @@
+			library(nlme); library(arm); options(signif=5)
+data (state)                  # "state" is an R data file
+state.abbr <- c (state.abb[1:8], "DC", state.abb[9:50])
+dc <- 9
+not.dc <- c(1:8,10:51)
+region <- c(3,4,4,3,4,4,1,1,5,3,3,4,4,2,2,2,2,3,3,1,1,1,2,2,3,2,4,2,4,
+            1,1,4,1,3,2,2,3,4,1,1,3,2,3,3,4,1,3,4,1,2,4)
+library(foreign)
+polls <- read.dta ("Class.Multilevel/examples/election88/polls.dta")
+attach(polls)
+
+# Select just the data from the last survey (#9158)
+table (survey)                # look at the survey id's
+
+survey
+ 9152  9153  9154  9155 9156a 9156b  9157  9158 
+ 1611  1653  1833  1943   684  1478  2149  2193 
+
+ok <- survey==9158            # define the condition
+polls.subset <- polls[ok,]    # select the subset of interest
+detach(polls)
+
+print (polls.subset[1:5,])
+         org year survey bush state edu age female black weight
+11352 cbsnyt    7   9158   NA     7   3   1      1     0    923
+11353 cbsnyt    7   9158    1    39   4   2      1     0    558
+11354 cbsnyt    7   9158    0    31   2   4      1     0    448
+11355 cbsnyt    7   9158    0     7   3   1      1     0    923
+11356 cbsnyt    7   9158    1    33   2   2      1     0    403
+
+polls.subset.delete <- NULL
+for (i in 1:nrow(polls.subset)) 
+    if ( sum(is.na(polls.subset[i,])) == 0 ) 
+        polls.subset.delete <- rbind(polls.subset.delete,polls.subset[i,])
+y <- polls.subset.delete$bush
+
+M1 <- lmer (y ~ black + female + (1 | state), family=binomial(link="logit"),
+      data=polls.subset.delete)
+summary(M1)
+
+Formula: y ~ black + female + (1 | state) 
+   Data: polls.subset 
+  AIC  BIC logLik deviance
+ 2667 2689  -1329     2659
+Random effects:
+ Groups Name        Variance Std.Dev.
+ state  (Intercept) 0.169    0.411   
+Number of obs: 2015, groups: state, 49
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)
+(Intercept)   0.4452     0.1009    4.41  1.0e-05
+black        -1.7416     0.2080   -8.37  < 2e-16
+female       -0.0970     0.0946   -1.03     0.31
+
+Correlation of Fixed Effects:
+       (Intr) black 
+black  -0.114       
+female -0.551 -0.006
+
+v.prev=c(0.57,0.63,0.61,0.54,0.54,0.58,0.57,0.53,0.15,0.61,0.52
+,0.52,0.66,0.54,0.58,0.52,0.60,0.53,0.58,0.55,0.50,0.49
+,0.55,0.51,0.58,0.53,0.57,0.67,0.60,0.63,0.56,0.55,0.52
+,0.57,0.61,0.55,0.60,0.54,0.53,0.48,0.57,0.60,0.55,0.59
+,0.69,0.56,0.61,0.55,0.49,0.53,0.63)
+
+attach(polls.subset.delete)
+n.edu <- 4
+age.edu <- n.edu*(age-1) + edu  # 4 times (age-1) + edu
+region.full <- region[state]    # 2193 LONG DATA-LEVEL VECTOR FOR REGIONS
+v.prev.full <- v.prev[state]    # 2193 LONG DATA-LEVEL VECTOR FOR PREVIOUS VOTE
+black.female <- black*female	# CREATES AN INTERACTION VARIABLE
+
+M2 <- lmer(y ~ black + female + black.female + v.prev.full + (1 | age) + (1 | edu)
+           + (1 | age.edu) + (1 | state) + (1 | region.full),
+           data=polls.subset.delete,family=binomial(link="logit"))
+detach(polls.subset.data)
+summary(M2)
+
+Formula: y ~ black + female + black.female + v.prev.full + (1 | age) +      
+             (1 | edu) + (1 | age.edu) + (1 | state) + (1 | region.full) 
+   Data: polls.subset.delete 
+  AIC  BIC logLik deviance
+ 2650 2706  -1315     2630
+Random effects:
+ Groups      Name        Variance   Std.Dev.  
+ state       (Intercept) 3.9330e-02 1.9832e-01
+ age.edu     (Intercept) 2.2414e-02 1.4971e-01
+ region.full (Intercept) 3.1180e-02 1.7658e-01
+ edu         (Intercept) 1.1169e-02 1.0568e-01
+ age         (Intercept) 1.0243e-09 3.2004e-05
+Number of obs: 2015, groups: state, 49; age.edu, 16; region.full, 5; edu, 4; age, 4
+
+Fixed effects:
+             Estimate Std. Error z value Pr(>|z|)
+(Intercept)  -3.45146    0.98249  -3.513 0.000443
+black        -1.63303    0.32445  -5.033 4.82e-07
+female       -0.09002    0.09784  -0.920 0.357503
+black.female -0.17916    0.41956  -0.427 0.669369
+v.prev.full   6.96836    1.75620   3.968 7.25e-05
+
+Correlation of Fixed Effects:
+            (Intr) black  female blck.f
+black       -0.026                     
+female      -0.053  0.181              
+black.femal  0.023 -0.764 -0.233       
+v.prev.full -0.990  0.009 -0.006 -0.009
+
+polls.X <- expand.grid(state=1:51,edu=1:4,age=1:4,female=0:1,black=0:1)
+polls.X[1,]
+  state edu age female black
+1     1   1   1      0     0
+
+coef(M2)$state[1,]
+  (Intercept)  black    female black.female v.prev.full
+1     -3.2988 -1.633 -0.089996     -0.17918      6.9682
+
+ranef(M1)$state[1,]
+[1] 0.54534
+
+y1.pred <- inv.logit( coef(M2)$state[1,1] + polls.X[1,4]*coef(M2)$state[1,]$female
+                     + polls.X[1,5]*coef(M2)$state[1,]$black
+                     + polls.X[1,4]*polls.X[1,5]*coef(M2)$state[1,]$black.female
+                     + v.prev[1]*coef(M2)$state[1,]$v.prev.full )
+y1.pred
+[1] 0.72225
+

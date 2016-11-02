@@ -1,0 +1,1395 @@
+dur <- c(0.833, 1.070, 1.234, 1.671, 2.065, 2.080, 2.114, 2.168, 2.274, 2.629, 2.637)
+N <- c(38, 28, 27, 20, 17, 15, 15, 15, 15, 14, 12)
+L <- qgamma(0.05,shape=sum(N),rate=sum(N*dur))
+H <- qgamma(0.95,shape=sum(N),rate=sum(N*dur))
+ruler <- seq(0,0.90,length=1000)
+postscript("Class.Multilevel/Images/models.figure01.ps")
+par(mfrow=c(1,1),mar=c(6,6,2,2),cex.axis=1,cex.lab=1.5,bg="slategray")
+plot(ruler,seq(0,12,length=length(ruler)),type="n", ylim=c(-3,12.5),
+xlab="Posterior Support",ylab="Posterior Density")
+lines(ruler,dgamma(ruler,shape=sum(N),rate=sum(N*dur)),lwd=2.5); abline(h=0)
+segments(L,0-.5,L,dgamma(L,shape=sum(N),rate=sum(N*dur)),lty=2)
+segments(H,0-.5,H,dgamma(H,shape=sum(N),rate=sum(N*dur)),lty=2)
+segments(L,0-.5,H,0-.5,lty=2)
+segments((L+H)/2,0-.5,(L+H)/2,0-1.09,lty=2)
+text((L+H)/2,-1.4,paste("90% Credible Interval, (",round(L,3),", ",
+round(H,3),")",sep=""),cex=1.1)
+segments(0,11,sum(N)/sum(N*dur),11,col="yellow3",lwd=4)
+text(sum(N)/sum(N*dur)/2,11.5,"Effect Size",col="yellow3",cex=1.3)
+dev.off()
+
+library(nlme); library(arm)
+trauma.out <- lmer(PTSD2 ~ CRIME + FSTPRIS + log(ARRESTS) + exp(TRAGE) + ALCO_1B
+	+ (1 + AGE EDUCATE | ETHNIC), family=binomial(link="probit"),
+		data=trauma.short.complete)
+summary(trauma.out)
+
+
+postscript("Class.Multilevel/essex_multilevel_A6.fig01.ps")				
+beta <- 3; alpha <- 3*(1:5)
+x <- runif(n=50,min=0,max=10)								
+y <- jitter( rep(1,50) %o% alpha + x*beta, factor=3 )					
+par(bg="slategray",mar=c(0,0,0,0))							
+plot(c(0,max(x)),c(0,30),type="n",ylab="y",xaxt="n",yaxt="n")			
+for (i in 1:ncol(y)) segments(0,alpha[i], max(x), 
+    lm(y[,i] ~ x)$coef %*% c(1,beta),col=colors()[619+i], lwd=3 )
+dev.off()
+
+postscript("Class.Multilevel/essex_multilevel_A6.fig02.ps")				
+alpha <- 3; beta <- 1.5*(1:5)
+x <- runif(n=50,min=0,max=10)								
+y <- jitter( alpha + x * (rep(1,50) %o% beta) , factor=3 )					
+par(bg="slategray",mar=c(0,0,0,0))							
+plot(c(0,max(x)),c(0,60),type="n",ylab="y",xaxt="n",yaxt="n")			
+for (i in 1:ncol(y)) segments(0,alpha, max(x), 
+lm(y[,i] ~ x)$coef %*% c(1,beta[i]),col=colors()[619+i], lwd=3 )
+dev.off()
+
+postscript("Class.Multilevel/essex_multilevel_A6.fig03.ps")				
+alpha <- c(33,4,12,9,21); beta <- 1*(1:5)
+x <- runif(n=50,min=0,max=10)								
+y <- jitter( rep(1,50) %o% alpha + x * (rep(1,50) %o% beta) , factor=3 )					
+par(bg="slategray",mar=c(0,0,0,0))							
+plot(c(0,max(x)),c(0,50),type="n",ylab="y",xaxt="n",yaxt="n")			
+for (i in 1:ncol(y)) segments(0,alpha[i], max(x), 
+    lm(y[,i] ~ x)$coef %*% c(1,beta[i]),col=colors()[619+i], lwd=3 )
+dev.off()
+
+# SETUP IN R
+srrs2 <- read.table("http://jgill.wustl.edu/data/srrs2.dat", header=TRUE, sep=",")
+mn <- srrs2$state=="MN"		# SETS UP A LONG LIST OF TRUE/FALSE
+radon <- srrs2$activity[mn]
+log.radon <- log(ifelse (radon==0, .1, radon))
+floor <- srrs2$floor[mn]        # 0 FOR BASEMENT, 1 FOR FIRST FLOOR
+n <- length(radon)
+y <- log.radon
+x <- floor
+# GET COUNTY INDEx VARIABLE (85 COUNTIES, 919 HOUSES)
+county.name <- as.vector(srrs2$county[mn])
+uniq <- unique(county.name)
+J <- length(uniq)
+county <- rep(NA, J)            # WILL MAP 919 -> 85
+for (i in 1:J) county[county.name==uniq[i]] <- i
+
+###### NO PREDICTORS FOR NOW
+sample.size <- as.vector(table (county))
+sample.size.jittered <- sample.size*exp(runif (J, -.1, .1))
+ybarbar = mean(y)
+cty.mns = tapply(y,county,mean)
+cty.vars = tapply(y,county,var)
+cty.sds = mean(sqrt(cty.vars[!is.na(cty.vars)]))/sqrt(sample.size)
+
+postscript("Class.Multilevel/figure12.1.ps")
+par(mfrow=c(1,2),mar=c(5,5,5,3),bg="lightgray")
+
+# LEFT PANEL
+plot(sample.size.jittered, cty.mns, cex.lab=.9, cex.axis=1, xlab="", ylab="",
+      pch=20, log="x", cex=.5, ylim=c(0,3.2), yaxt="n", xaxt="n")
+mtext(side=1,line=2.5,"Jittered Sample Size in County J")
+mtext(side=2,line=2.5,"Sample Mean in County J")
+mtext(side=3,line=1.5,"No-Pooling",cex=1.5)
+axis(1, c(1,3,10,30,100), cex.axis=.9); axis(2, seq(0,3), cex.axis=.9)
+for (j in 1:J) lines(rep(sample.size.jittered[j],2),
+                      cty.mns[j] + c(-1,1)*cty.sds[j], lwd=.5)
+abline(h=ybarbar,lty=2)
+points(sample.size.jittered[36],cty.mns[36],cex=4,col="firebrick")
+
+# RIGHT PANEL
+plot(sample.size.jittered, mlm.radon.mean, cex.lab=.9, cex.axis=1,
+      xlab="", ylab="", pch=20, log="x", cex=.5,
+      ylim=c(0,3.2), yaxt="n", xaxt="n")
+mtext(side=1,line=2.5,"Jittered Sample Size in County J")
+mtext(side=2,line=2.5,"Estimated Population Mean in County J")
+mtext(side=3,line=1.5,"Multilevel Model",cex=1.5)
+axis(1, c(1,3,10,30,100), cex.axis=.9); axis(2, seq(0,3), cex.axis=.9)
+for (j in 1:J) lines(rep(sample.size.jittered[j],2),
+         mlm.radon.mean[j] + c(-1,1)*mlm.radon.sd[j], lwd=.5)
+abline(h=mean(mlm.radon.mean))
+points(sample.size.jittered[36],mlm.radon.mean[36],cex=4,col="forestgreen")
+dev.off()
+
+          Mean      SD   NaiveSE TimeseriesSE
+sigma.y 0.7991 0.01956 0.0001956    0.0002304
+a1      1.0602 0.25501 0.0025501    0.0031325
+mu.a    1.3136 0.05011 0.0005011    0.0009859
+sigma.a 0.3171 0.04888 0.0004888    0.0014624
+
+lm.pooled <- lm(y ~ x)                 lm.unpooled <- lm(y ~ x + factor(county) - 1)
+summary(lm.pooled)                     summary(lm.unpooled)
+
+            Estimate      SE t-stat                     Estimate         SE  t-stat
+(Intercept)  1.32674 0.02972 44.640
+          x -0.61339 0.07284 -8.421    x                -0.72054    0.07352  -9.800
+				       factor(county)1   0.84054    0.37866   2.220
+				       factor(county)2   0.87482    0.10498   8.333
+				       factor(county)3   1.52870    0.43946   3.479
+				       :
+				       factor(county)84  1.64535    0.20987   7.840
+				       factor(county)85  1.18652    0.53487   2.218
+
+RSE: 0.8226 on 917 df                  RSE: 0.7564 on 833 df
+R-Squared: 0.0717, Adj.R-Sqr: 0.0707   R-Squared: 0.7671, Adj.R-Sqr: 0.7431 
+F: 70.91, 1 and 917 df,  p < 2.2e-16   F: 31.91, 86 and 833 df, p < 2.2e-16 
+
+# REPLICATE THE PLOT ON PAGE 256
+postscript("Class.Multilevel/figure12.3a.ps")
+par(mfrow=c(1,2),mar=c(5,5,5,3),bg="lightgray")
+plot(sample.size.jittered, coef(lm.unpooled)[-1], cex.lab=.9, cex.axis=1, xlab="",
+      ylab="", pch=20, log="x", cex=.5, ylim=c(0,3.2), yaxt="n", xaxt="n")
+mtext(side=1,line=2.5,"Jittered Sample Size in County J")
+mtext(side=2,line=2.5,"Estimated Intercept, No-Pooling")
+mtext(side=3,line=1.5,"No-Pooling",cex=1.5)
+axis(1, c(1,3,10,30,100), cex.axis=.9); axis(2, seq(0,3), cex.axis=.9)
+for (j in 1:J) lines(rep(sample.size.jittered[j],2),
+                      cty.mns[j] + c(-1,1)*cty.sds[j], lwd=.5)
+hist(coef(lm.unpooled)[-1],col="light grey",breaks=10,main="", xlab="",ylab="",
+          freq=TRUE,cex.axis=1.3)
+mtext(outer=FALSE,side=1,line=2.6,"Histogram of Estimated Alpha Values")
+mtext(outer=FALSE,side=3,line=2.5,cex=1.5, "Blue Line at Alpha Pooled",
+      col="royalblue4")
+abline(v=lm.pooled$coef[1],col="royalblue4",lwd=3)
+dev.off()
+
+library(lme4); library(arm); options(digits =  5)
+M0 <- lmer(y ~ 1 + (1 | county))
+summary(M0)
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ county   (Intercept) 0.095816 0.30954
+ Residual             0.636620 0.79788
+number of obs: 919, groups: county, 85
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  1.31258    0.04891   26.84
+
+library(lme4); library(arm); options(digits =  5)
+M0 <- lmer(y ~ 1 + (1 | county))
+summary(M0)
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ county   (Intercept) 0.095816 0.30954 
+ Residual             0.636620 0.79788 
+number of obs: 919, groups: county, 85
+			
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  1.31258    0.04891   26.84
+
+M1 <- lmer(y ~ x + (1 | county))
+summary(M1)
+
+Random effects:
+ Groups   Name     Variance Std.Dev.
+ county   (Intercept) 0.108    0.328   
+ Residual             0.571    0.756   
+number of obs: 919, groups: county, 85
+			
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   1.4616     0.0516   28.34
+x            -0.6930     0.0704   -9.84
+
+M1 <- lmer(y ~ x + (1 | county))
+summary(M1)
+
+Random effects:
+ Groups   Name     Variance Std.Dev.
+ county   (Intercept) 0.108    0.328   
+ Residual             0.571    0.756
+number of obs: 919, groups: county, 85
+                         
+Fixed effects:  
+            Estimate Std. Error t value
+(Intercept)   1.4616     0.0516   28.34
+x            -0.6930     0.0704   -9.84
+
+			coef(M1)
+			   (Intercept)     x
+			1         1.19 -0.69
+			2         0.93 -0.69
+			3         1.48 -0.69
+			:
+			83        1.57 -0.69
+			84        1.59 -0.69
+			85        1.39 -0.69
+
+			ranef(M1)
+			   (Intercept)
+			1       -0.270
+			2       -0.534
+			3        0.018
+			:
+			83       0.110
+			84       0.129
+			85      -0.075
+
+			ranef(M1)
+			   (Intercept)
+			1       -0.270
+			2       -0.534
+			3        0.018
+			:
+			83       0.110
+			84       0.129
+			85      -0.075
+
+fixef(M1)["x"] + c(-1.96,1.96)*se.fixef(M1)["x"]
+-0.83 -0.55
+
+fixef(M1)["x"] + c(-1.96,1.96)*se.fixef(M1)["x"]
+-0.83 -0.55
+		
+coef(M1)$county[55,1] + c(-1.96,1.96)*se.ranef(M1)$county[55]
+1.1 2.0
+		
+fixef(M1)["x"] + c(-1.96,1.96)*se.fixef(M1)["x"]
+-0.83 -0.55
+		
+coef(M1)$county[55,1] + c(-1.96,1.96)*se.ranef(M1)$county[55]
+1.1 2.0
+		
+ranef(M1)$county[55,] + c(-1.96,1.96)*se.ranef(M1)$county[55]
+-0.32  0.50
+
+srrs2.fips <- srrs2$stfips*1000 + srrs2$cntyfips
+cty <- read.table("http://jgill.wustl.edu/data/cty.dat", header=T, sep=",")
+usa.fips <- 1000*cty[,"stfips"] + cty[,"ctfips"]
+usa.rows <- match (unique(srrs2.fips[mn]), usa.fips)
+uranium <- cty[usa.rows,"Uppm"]
+u <- log(uranium)
+u.full <- u[county]
+
+M2 <- lmer (y ~ x + u.full + (1 | county))
+
+fixef(M2)
+(Intercept)           x      u.full 
+    1.46576    -0.66824     0.72027 
+
+# COMBINE THE AGGREGATE COUNTY LEVEL EFFECTS
+a.hat.M2 <- fixef(M2)[1] + fixef(M2)[3]*u + as.vector(ranef(M2)$county)
+
+# COLLECT THE VARIABLE FLOOR EFFECT
+b.hat.M2 <- fixef(M2)[2]
+
+M2 <- lmer (y ~ x + u.full + (1 | county))
+
+fixef(M2)
+(Intercept)           x      u.full 
+    1.46576    -0.66824     0.72027 
+
+# COMBINE THE AGGREGATE COUNTY LEVEL EFFECTS
+a.hat.M2 <- fixef(M2)[1] + fixef(M2)[3]*u + as.vector(ranef(M2)$county)
+
+# COLLECT THE VARIABLE FLOOR EFFECT
+b.hat.M2 <- fixef(M2)[2]
+
+        M1 <- lmer(y ~ x + (1 | county))
+        a.hat.M1 <- fixef(M1)[1] + ranef(M1)$county #coef(M1)[[1]]["(Intercept)"]
+        b.hat.M1 <- fixef(M1)[2]
+        u.full <- u[county]
+        M2 <- lmer(y ~ x + u.full + (1 | county))
+        a.hat.M2 <- fixef(M2)[1] + fixef(M2)[3]*u + as.vector(ranef(M2)$county)
+        b.hat.M2 <- fixef(M2)[2]
+        x.jitter <- x + runif(n,-0.05,0.05)
+        display8 <- c(2,84,24,26,19,55,45,71)
+        y.range <- range(y[!is.na(match(county,display8))])
+        postscript("Class.Multilevel/figure12.5.ps",horizontal=TRUE)
+        par(mfrow=c(2,4),mar=c(3,2,2,1),oma=c(6,6,2,2),bg="lightgray")
+
+for (j in display8){
+    plot(x.jitter[county==j], y[county==j], xlim=c(-.05,1.05), ylim=y.range,
+        xlab="", ylab="", cex.lab=1.6, cex.axis=1.5,
+        pch=20, mgp=c(2,.7,0), xaxt="n", yaxt="n", cex.main=1.3)  #, main=uniq[j])
+    axis(1, c(0,1), mgp=c(2,.7,0), cex.axis=1.5)
+    axis(2, seq(-1,3,2), mgp=c(2,.7,0), cex.axis=1.5)
+    curve(a.hat.M1[j,] + b.hat.M1*x, lty=3, lwd=2, col="forestgreen", add=TRUE)
+    curve(a.hat.M2[j,] + b.hat.M2*x, lty=1, lwd=2, col="firebrick", add=TRUE)
+    mtext(outer=FALSE,side=3,line=0.8,paste(uniq[j]),cex=1.1)
+}
+mtext(outer=TRUE,side=1,line=2.5,"Jittered Floor (x) Variable",cex=1.4)
+mtext(outer=TRUE,side=2,line=2.5,"Log Radon Level",cex=1.4); dev.off()
+
+        postscript("Class.Multilevel/figure12.6.ps")
+        par(mfrow=c(1,1),mar=c(5,5,2,1),bg="lightgray")
+        plot(u, t(a.hat.M2), cex.lab=1.1, cex.axis=1.1, pch=20, ylab="",xlab="",
+            yaxt="n", xaxt="n", ylim=c(0.5,2))
+        axis(1, seq(-1,1,.5), cex.axis=1.0)
+        axis(2, seq(0,2.0,.5), cex.axis=1.0)
+        mtext(side=1,cex=1.3,"County-Level Uranium",line=2.5)
+        mtext(side=2,cex=1.3,"Estimated Regression Intercept",line=2.5)
+        curve(fixef(M2)["(Intercept)"] + fixef(M2)["u.full"]*x, lwd=1,
+            col="black", add=TRUE)
+        for (j in 1:J)
+            lines(rep(u[j],2), a.hat.M2[j,] + c(-1,1)*se.coef(M2)$county[j,],
+                lwd=.5, col="gray10")
+        dev.off()
+
+y ~ 1 + x + (1 + x | county)
+
+M3 <- lmer(y ~ 1 + x + (1 + x | county))
+summary(M3)
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr   
+ county   (Intercept) 0.122    0.349           
+          x           0.118    0.344    -0.337 
+ Residual             0.557    0.746           
+number of obs: 919, groups: county, 85
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   1.4628     0.0539   27.15
+x            -0.6811     0.0876   -7.78
+
+Correlation of Fixed Effects:       (Intr)   x -0.381
+
+coef (M3)
+   (Intercept)        x
+1      1.14451 -0.54054
+2      0.93338 -0.77089
+3      1.47169 -0.66887
+:
+83     1.69429 -1.15131
+84     1.59912 -0.73273
+85     1.37879 -0.65315
+
+		\begin{VM}
+coef (M3)
+   (Intercept)        x
+1      1.14451 -0.54054
+2      0.93338 -0.77089
+3      1.47169 -0.66887
+:
+83     1.69429 -1.15131
+84     1.59912 -0.73273
+85     1.37879 -0.65315
+
+fixef(M3)
+(Intercept)           x 
+    1.46277    -0.68109 
+
+		ranef(M3)
+		An object of class “ranef.lmer”
+		[[1]]
+		   (Intercept)          x
+		1   -0.3182642  0.1405481
+		2   -0.5293905 -0.0898034
+		3    0.0089163  0.0122211
+		:
+		83   0.2315155 -0.4702222
+		84   0.1363534 -0.0516471
+		85  -0.0839834  0.0279326
+
+		is.numeric(as.matrix(ranef(M3)[[1]]))
+		[1] TRUE
+
+		ranef(M3)
+		An object of class “ranef.lmer”
+		[[1]]
+		   (Intercept)          x
+		1   -0.3182642  0.1405481
+		2   -0.5293905 -0.0898034
+		3    0.0089163  0.0122211
+		:
+		83   0.2315155 -0.4702222
+		84   0.1363534 -0.0516471
+		85  -0.0839834  0.0279326
+
+		is.numeric(as.matrix(ranef(M3)[[1]]))
+		[1] TRUE
+
+                fixef(M3)
+                (Intercept)           x
+                    1.46277    -0.68109
+
+                ranef(M3)
+                   (Intercept)          x
+                85  -0.0839834  0.0279326
+
+                fixef(M3)
+                (Intercept)           x
+                    1.46277    -0.68109
+
+                ranef(M3)
+                   (Intercept)          x
+                85  -0.0839834  0.0279326
+
+M4 <- lmer(y ~ x + u.full + x:u.full + (1 + x | county))
+summary(M4)
+Random effects:
+Groups   Name        Variance Std.Dev. Corr  
+ county   (Intercept) 0.0156   0.125          
+ x           0.0941   0.307    0.409    0.409
+ Residual             0.5617   0.749          
+number of obs: 919, groups: county, 85
+
+Fixed effects:
+            Estimate Std. Error t value      Correlation of Fixed Effects:
+(Intercept)   1.4686     0.0353    41.6             (Intr) x      u.full
+x            -0.6710     0.0844    -7.9      x        -0.241              
+u.full        0.8081     0.0907     8.9      u.full    0.207 -0.092       
+x:u.full     -0.4195     0.2271    -1.8      x:u.full -0.093  0.173 -0.231
+
+		   (Intercept)        x  u.full x:u.full
+		1       1.4586 -0.64699 0.80806 -0.41946
+		2       1.4958 -0.88908 0.80806 -0.41946
+		3       1.4770 -0.64671 0.80806 -0.41946
+		:
+		85      1.4388 -0.70110 0.80806 -0.41946
+		\end{VM}
+
+(a.se.M4 <- se.coef(M4)$county[,1])
+       1        2        3        4        5 
+0.115104 0.088738 0.113913 0.107827 0.114849 
+:
+      81       82       83       84       85 
+0.113973 0.123016 0.102748 0.104667 0.121417 
+
+
+(b.se.M4 <- se.coef(M4)$county[,2])
+      1       2       3       4       5       
+0.27765 0.24657 0.25677 0.23350 0.27673
+:
+     81      82      83      84      85 
+0.25710 0.30611 0.24339 0.27438 0.30546 
+	
+			(a.hat.M4 <- coef(M4)$county[,1] + coef(M4)$county[,3]*u)
+			[1] 0.90183 0.81112 1.38532 1.04836 1.36381
+ 			[6] 1.76082 1.80116 1.72896 1.17220 1.54278
+			[11] 1.02871 1.69382 0.89785 1.81452 1.40840
+			[16] 1.03980 1.69203 0.98504 1.37662 1.69093
+			[21] 1.62833 1.55381 1.78631 1.74244 1.73766
+			[26] 1.36610 1.87382 1.14298 0.87602 0.93101
+			[31] 1.75509 1.40663 1.60761 1.46626 0.73204
+			[36] 1.81111 0.80251 1.00689 1.65030 1.88213
+			[41] 1.83688 1.58336 1.48489 1.49105 1.50566
+			[46] 1.45475 1.24872 1.35052 1.67190 1.80985
+			[51] 1.71852 1.80635 1.64544 1.52360 1.35592
+			[56] 1.36506 1.24744 1.86792 1.68286 1.67397
+			[61] 1.14452 1.82848 1.78606 1.67482 1.86403
+			[66] 1.36588 1.60164 0.94786 1.61865 0.91082
+			[71] 1.53118 1.66351 1.84605 1.65053 1.46872
+			[76] 1.88869 1.61307 0.94731 1.52746 1.32857
+			[81] 1.72395 1.67474 1.77278 1.45802 1.72586
+
+			(b.hat.M4 <- coef(M4)$county[,2] + coef(M4)$county[,4]*u)
+ 			[1] -0.35796 -0.53366 -0.59912 -0.35033 -0.56350
+ 			[6] -0.85411 -0.43575 -0.71334 -0.42378 -0.76886
+			[11] -0.36401 -0.78178 -0.33904 -0.77142 -0.66199
+			[16] -0.48011 -1.00850 -0.27916 -0.81425 -0.77257
+			[21] -0.65545 -0.99096 -0.86368 -0.63147 -0.42185
+			[26] -0.76403 -0.84279 -0.48522 -0.34061 -0.39440
+			[31] -0.76366 -0.66763 -0.66642 -0.68630 -0.29324
+			[36] -0.54770 -0.49519 -0.17535 -0.66512 -0.78201
+			[41] -0.67906 -0.73999 -0.95435 -1.01596 -0.92309
+			[46] -0.71455 -0.79364 -0.62319 -0.94192 -0.81929
+			[51] -0.72530 -0.83096 -0.86356 -1.08360 -0.44362
+			[56] -0.82123 -0.73802 -0.80408 -0.84303 -0.81096
+			[61] -0.30246 -0.52019 -0.72368 -0.71358 -0.92401
+			[66] -0.43552 -0.37705 -0.35267 -0.81248 -0.63459
+			[71] -0.83835 -0.80751 -0.87154 -0.87757 -0.49857
+			[76] -0.85706 -0.80950 -0.40586 -0.96665 -0.78664
+			[81] -0.43324 -0.75457 -1.22833 -0.57739 -0.85013
+
+postscript("Class.Multilevel/figure13.2.ps")
+lower <- a.hat.M4 - a.se.M4
+upper <- a.hat.M4 + a.se.M4
+par(mfrow=c(1,2),mar=c(5,5,5,3),bg="lightgray",cex.lab=1.4,cex.axis=1.1)
+plot(u, a.hat.M4, ylim=range(lower,upper), pch=20,
+     xlab="County-Level Uranium", ylab=expression(alpha))
+segments (u, lower, u, upper, lwd=.5, col="gray10")
+curve(fixef(M4)[1] + fixef(M4)[3]*x, lwd=3, col="purple", add=TRUE)
+
+lower <- b.hat.M4 - b.se.M4
+upper <- b.hat.M4 + b.se.M4
+plot (u, b.hat.M4, ylim=range(lower,upper), pch=20,
+      xlab="County-Level Uranium", ylab=expression(beta))
+segments (u, lower, u, upper, lwd=.5, col="gray10")
+curve(fixef(M4)[2] + fixef(M4)[4]*x, lwd=3, col="purple", add=TRUE)
+dev.off()
+
+library(lme4); library(arm); options(digits =  5)
+smoking <- read.table("http://jgill.wustl.edu/data/smoke_pub.dat",header=TRUE)
+names(smoking)
+[1] "newid"    "sex.1.F." "parsmk"   "wave"     "smkreg"  
+smoking[1:12,]
+   	newid sex.1.F. parsmk wave smkreg
+	1      1        1      0    1      0
+	2      1        1      0    2      0
+	3      1        1      0    4      0
+	4      1        1      0    5      0
+	5      1        1      0    6      0
+	6      2        0      0    1      0
+	7      2        0      0    2      0
+	8      2        0      0    3      0
+	9      2        0      0    4      0
+	10     2        0      0    5      0
+	11     2        0      0    6      0
+	12     3        1      0    1      0
+
+\begin{VM}
+lmer.out <- lmer(smkreg ~ wave + (1|newid), data=smoking, 
+	            family=binomial(link=logit))
+display(lmer.out)
+glmer(formula = smkreg ~ wave + (1 | newid), data = smoking, 
+    family = binomial(link = logit))
+            coef.est coef.se
+(Intercept) -6.41     0.27  
+wave         0.21     0.05  
+
+Error terms:
+ Groups   Name        Std.Dev.
+ newid    (Intercept) 4.17    
+ Residual             1.00    
+number of obs: 8730, groups: newid, 1760
+AIC = 17774.7, DIC = 17769
+deviance = 17768.7 
+\end{VM}
+
+lmer.out <- lmer(smkreg ~ wave + sex.1.F. + parsmk + (1|newid), data=smoking, 
+	            family=binomial(link=logit))
+display(lmer.out)
+glmer(formula = smkreg ~ wave + sex.1.F. + parsmk + (1 | newid), 
+    data = smoking, family = binomial(link = logit))
+            coef.est coef.se
+(Intercept) -6.60     0.30  
+wave         0.25     0.04  
+sex.1.F.     0.05     0.32  
+parsmk       1.17     0.31  
+
+Error terms:
+ Groups   Name        Std.Dev.
+ newid    (Intercept) 4.18    
+ Residual             1.00    
+number of obs: 8730, groups: newid, 1760
+AIC = 3935.8, DIC = 3925.8
+deviance = 3925.8 
+
+lmer.out <- lmer(smkreg ~ wave + sex.1.F. + wave:sex.1.F. + (1|newid), data=smoking, 
+	            family=binomial(link=logit))
+display(lmer.out)
+glmer(formula = smkreg ~ wave + sex.1.F. + wave:sex.1.F. + (1 | 
+    newid), data = smoking, family = binomial(link = logit))
+              coef.est coef.se
+(Intercept)   -4.85     0.26  
+wave           0.10     0.05  
+sex.1.F.      -0.88     0.36  
+wave:sex.1.F.  0.21     0.07  
+
+Error terms:
+ Groups   Name        Std.Dev.
+ newid    (Intercept) 3.47    
+ Residual             1.00    
+number of obs: 8730, groups: newid, 1760
+AIC = 4086.4, DIC = 4076.4
+deviance = 4076.4 
+
+"Indometh" <-
+  structure(list(
+   Subject = structure(ordered(c(1, 1, 1, 1, 1, 1,
+     1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 6, 6, 6, 6, 6,
+     6, 6, 6, 6, 6, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4,
+     4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5), levels=1:6),
+     class = c("ordered", "factor"),
+     .Label = c("1", "4", "2", "5", "6", "3")),
+   time = c(0.25, 0.5, 0.75, 1, 1.25, 2, 3, 4, 5, 6, 8, 0.25, 0.5,
+     0.75, 1, 1.25, 2, 3, 4, 5, 6, 8, 0.25, 0.5, 0.75, 1, 1.25, 2, 3,
+     4, 5, 6, 8, 0.25, 0.5, 0.75, 1, 1.25, 2, 3, 4, 5, 6, 8, 0.25,
+     0.5, 0.75, 1, 1.25, 2, 3, 4, 5, 6, 8, 0.25, 0.5, 0.75, 1, 1.25,
+     2, 3, 4, 5, 6, 8),
+   conc = c(1.5, 0.94, 0.78, 0.48, 0.37, 0.19, 0.12, 0.11,
+     0.08, 0.07, 0.05, 2.03, 1.63, 0.71, 0.7, 0.64, 0.36, 0.32, 0.2,
+     0.25, 0.12, 0.08, 2.72, 1.49, 1.16, 0.8, 0.8, 0.39, 0.22, 0.12,
+     0.11, 0.08, 0.08, 1.85, 1.39, 1.02, 0.89, 0.59, 0.4, 0.16, 0.11,
+     0.1, 0.07, 0.07, 2.05, 1.04, 0.81, 0.39, 0.3, 0.23, 0.13, 0.11,
+     0.08, 0.1, 0.06, 2.31, 1.44, 1.03, 0.84, 0.64, 0.42, 0.24, 0.17,
+     0.13, 0.1, 0.09)),
+row.names = 1:66,
+class = c("nfnGroupedData", "nfGroupedData", "groupedData", "data.frame"),
+formula = conc ~ time | Subject,
+labels = list(x = "Time since drug administration",
+  y = "Indomethacin concentration"),
+units = list(x = "(hr)", y = "(mcg/ml)"))
+
+Indometh
+
+Grouped Data: conc ~ time | Subject
+   Subject time conc
+1        1 0.25 1.50
+2        1 0.50 0.94
+:	
+65       6 6.00 0.10
+66       6 8.00 0.09
+
+names(Indometh)
+"Subject" "time"    "conc"   
+
+class(Indometh)
+"nfnGroupedData" "nfGroupedData" "groupedData" "data.frame"    
+
+formula(Indometh)
+Subject ~ time + conc
+
+library(nlme)
+indo.pop.nls <- nls(conc ~ SSbiexp(time, A1, lrc1, A2, lrc2), data = Indometh) 
+summary(indo.pop.nls) 
+Parameters: 
+     Estimate Std. Error t value Pr(>|t|)    
+A1      2.773      0.253   10.95    4e-16 
+lrc1    0.886      0.222    3.99  0.00018 
+A2      0.607      0.267    2.27  0.02660 
+lrc2   -1.092      0.409   -2.67  0.00966 
+--- 
+Residual standard error: 0.1745 on 62 degrees of freedom 
+
+indo.term.lis <- nlsList(conc ~ SSbiexp(time, A1, lrc1, A2, lrc2), data = Indometh)
+summary(indo.term.lis)
+
+Coefficients:
+   A1 
+  Estimate Std. Error   t value     Pr(>|t|)
+1 2.029277  0.2023875 10.026695 3.388285e-07
+2 2.827673  0.2311604 12.232518 3.536510e-04
+3 5.468312  1.8759966  2.914884 1.087070e-02
+4 2.198132  0.3155032  6.967066 7.942588e-06
+5 3.566103  0.3245732 10.987053 5.630248e-06
+6 3.002250  0.3503106  8.570251 3.069467e-07
+   lrc1 
+   Estimate Std. Error  t value     Pr(>|t|)
+1 0.5793887  0.2295508 2.524011 2.347391e-03
+2 0.8013195  0.1803742 4.442540 5.193756e-02
+3 1.7497936  0.3108862 5.628406 2.937754e-04
+4 0.2423124  0.2427792 0.998077 1.402737e-01
+5 1.0407660  0.1636874 6.358253 1.986106e-04
+6 1.0882119  0.2564197 4.243870 3.504364e-05
+   A2 
+   Estimate Std. Error   t value     Pr(>|t|)
+1 0.1915474  0.2037201 0.9402482 0.1269760002
+2 0.4989175  0.1822390 2.7377104 0.1927034117
+3 1.6757521  0.2814723 5.9535238 0.0002075745
+4 0.2545223  0.3716832 0.6847828 0.2914158655
+5 0.2914970  0.1592207 1.8307727 0.0811792830
+6 0.9685230  0.2905245 3.3337056 0.0001646898
+
+   lrc2 
+    Estimate Std. Error   t value     Pr(>|t|)
+1 -1.7877849  1.4495070 -1.233374 0.0573694854
+2 -1.6353512  0.4779239 -3.421781 0.1146482023
+3 -0.4122004  0.1680153 -2.453351 0.0232031740
+4 -1.6026860  1.4786607 -1.083877 0.1138959965
+5 -1.5068522  0.7133811 -2.112268 0.0511506022
+6 -0.8731358  0.2715939 -3.214858 0.0002066297
+
+Residual standard error: 0.0755502 on 42 degrees of freedom # 66-24
+
+indo.nlme <- nlme( indo.term.lis, random = pdDiag(A1 + lrc1 + A2 + lrc2 ~ 1) )
+
+summary(indo.nlme)
+
+Data: Indometh 
+        AIC       BIC   logLik
+  -91.18562 -71.47873 54.59281
+
+Random effects:
+ Formula: list(A1 ~ 1, lrc1 ~ 1, A2 ~ 1, lrc2 ~ 1)
+ Level: Subject
+ Structure: Diagonal
+             A1    lrc1      A2       lrc2 Residual
+StdDev: 0.57141 0.15808 0.11160 8.2778e-06 0.081493
+
+Fixed effects: list(A1 ~ 1, lrc1 ~ 1, A2 ~ 1, lrc2 ~ 1) 
+        Value Std.Error DF t-value p-value
+A1    2.82754   0.26401 57 10.7099   0e+00
+lrc1  0.77362   0.11003 57  7.0313   0e+00
+A2    0.46147   0.11281 57  4.0908   1e-04
+lrc2 -1.34410   0.23108 57 -5.8167   0e+00
+
+Standardized Within-Group Residuals:
+     Min       Q1      Med       Q3      Max 
+-3.17338 -0.35627 -0.12853  0.34232  3.00251 
+
+Number of Observations: 66
+Number of Groups: 6 
+ 
+( be.fixed.terms <- as.vector(indo.nlme$coefficients$fixed) )
+
+[1]  2.8275982  0.7732937  0.4610679 -1.3449124
+
+( be.random.terms <- as.matrix(indo.nlme$coefficients$random$Subject) )
+
+           A1         lrc1          A2          lrc2
+1 -0.73966229  0.027813190 -0.11124141  6.553013e-17
+2 -0.07054535  0.028667640  0.08711800 -1.855721e-16
+3  0.80060558  0.004134323  0.06711258  4.906331e-17
+4 -0.56554287 -0.231256957  0.01169103  7.287592e-17
+5  0.41273288  0.198153725 -0.13174119  3.397749e-17
+6  0.16241204 -0.027511921  0.07706099 -3.587477e-17
+
+		connect1 <- url("http://jgill.wustl.edu/data/Pixel.rda")
+		load(connect1);   close(connect1)
+		Pixel[,"Side"] <- as.numeric( Pixel[,"Side"] )
+		Pixel[1:10,]
+		   Dog Side day  pixel
+		1    1    2   0 1045.8
+		2    1    2   1 1044.5
+		3    1    2   2 1042.9
+		4    1    2   4 1050.4
+		5    1    2   6 1045.2
+		6    1    2  10 1038.9
+		7    1    2  14 1039.8
+		8    2    2   0 1041.8
+		9    2    2   1 1045.6
+		10   2    2   2 1051.0
+
+	postscript("Class.Multilevel/dogs1.ps")
+	J = max(as.numeric(Pixel$Dog))
+	day.range <- c(min(as.numeric(Pixel$day)), max(as.numeric(Pixel$day)))
+	pixel.range <- c(min(as.numeric(Pixel$pixel)), max(as.numeric(Pixel$pixel)))
+	par(oma=c(5,5,1,1),mar=c(0,0,0,0),mfrow=c(J/(J/2),J/2),bg="white")
+	for (i in 1:J)  {
+	    dog.i <- Pixel[Pixel["Dog"]==i,]
+	    plot(dog.i[dog.i["Side"]==2,][,3:4], xlim=day.range, ylim=pixel.range,
+	        pch=18,col="darkmagenta",yaxt="n",xaxt="n")
+	    lines(lowess(dog.i[dog.i["Side"]==2,][,3:4], f=0.9), col="darkmagenta")
+	    points(dog.i[dog.i["Side"]==1,][,3:4], pch=19,col="darkseagreen3")
+	    lines(lowess(dog.i[dog.i["Side"]==1,][,3:4], f=0.9), col="darkseagreen3")
+	    if (i > 5) axis(side=1,labels=seq(0,21,by=3),at=seq(0,21,by=3))
+	    if (i == 1 | i==6) axis(side=2,labels=names(quantile(Pixel$pixel)[-1]),
+	        at=quantile(Pixel$pixel)[-1])
+	    if (i == 1)  { text(3,1150,"RIGHT",col="magenta")
+	                   text(3,1140,"LEFT",col="darkseagreen3") }
+	}
+	dev.off()
+
+fm1Pixel <- lmer(pixel ~ day + I(day^2) + (1 | Dog), data = Pixel)
+summary(fm1Pixel)
+   AIC   BIC logLik deviance REMLdev
+ 895.2 908.4 -442.6    886.9   885.2
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ Dog      (Intercept) 633.89   25.177  
+ Residual             263.95   16.247  
+Number of obs: 102, groups: Dog, 10
+
+Fixed effects:
+              Estimate Std. Error t value          Correlation of Fixed Effects:
+(Intercept) 1074.16253    9.12496  117.72                   (Intr) day   
+day            4.94201    1.03686    4.77          day      -0.426       
+I(day^2)      -0.25047    0.05303   -4.72          I(day^2)  0.355 -0.945
+
+fm2Pixel <- lmer(pixel ~ day + I(day^2) + Side + (1 | Dog), data = Pixel)
+summary(fm2Pixel)
+   AIC BIC logLik deviance REMLdev
+ 890.2 906 -439.1      884   878.2
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ Dog      (Intercept) 634.54   25.190  
+ Residual             258.56   16.080  
+Number of obs: 102, groups: Dog, 10
+
+Fixed effects:
+              Estimate Std. Error t value           Correlation of Fixed Effects:
+(Intercept) 1082.28413   10.28304  105.25                   (Intr) day    I(d^2)
+day            4.93811    1.02628    4.81          day      -0.374              
+I(day^2)      -0.25029    0.05249   -4.77          I(day^2)  0.311 -0.945       
+Side          -5.40196    3.18425   -1.70          Side     -0.464  0.000  0.000
+
+anova(fm2Pixel,fm1Pixel)
+
+fm1Pixel: pixel ~ day + I(day^2) + (1 | Dog)
+fm2Pixel: pixel ~ day + I(day^2) + Side + (1 | Dog)
+         Df     AIC     BIC  logLik  Chisq Chi Df Pr(>Chisq)
+fm1Pixel  5  896.87  910.00 -443.44                         
+fm2Pixel  6  895.94  911.69 -441.97 2.9352      1    0.08667
+
+pchisq(2*as.numeric(logLik(fm2Pixel) - logLik(fm1Pixel)),1,lower.tail=FALSE)
+0.03000196
+
+fm3Pixel <- lmer(pixel ~ day + I(day^2) + (Side | Dog) + (-1 + day | Dog), 
+                 data = Pixel); summary(fm3Pixel)
+
+   AIC   BIC logLik deviance REMLdev
+ 843.4 864.4 -413.7    829.7   827.4
+Random effects:
+ Groups   Name        Variance  Std.Dev. Corr   
+ Dog      (Intercept) 1937.2268 44.014          
+          Side         565.3087 23.776   -0.746 
+ Dog      day            3.1791  1.783          
+ Residual               81.3617  9.020          
+Number of obs: 102, groups: Dog, 10
+
+Fixed effects:
+             Estimate Std. Error t value          Correlation of Fixed Effects:
+(Intercept) 1073.6530     9.7331  110.31                  (Intr) day   
+day            6.2335     0.8655    7.20         day      -0.202       
+I(day^2)      -0.3685     0.0340  -10.84         I(day^2)  0.195 -0.679
+
+anova( fm3Pixel, fm2Pixel )
+
+fm2Pixel: pixel ~ day + I(day^2) + Side + (1 | Dog)
+fm3Pixel: pixel ~ day + I(day^2) + (Side | Dog) + (-1 + day | Dog)
+         Df     AIC     BIC  logLik Chisq Chi Df Pr(>Chisq)
+fm2Pixel  6  895.94  911.69 -441.97                        
+fm3Pixel  8  845.69  866.69 -414.84 54.25      2  1.658e-12
+
+fm4Pixel <- lmer(pixel ~ day + I(day^2) + Side + (Side | Dog) + (-1 + day | Dog), 
+                 data = Pixel); summary(fm4Pixel)
+ AIC   BIC logLik deviance REMLdev
+ 838 861.7   -410    828.2     820
+Random effects:
+ Groups   Name        Variance  Std.Dev. Corr   
+ Dog      (Intercept) 1908.1242 43.6821         
+          Side         544.6817 23.3384  -0.741 
+ Dog      day            3.1794  1.7831         
+ Residual               81.2434  9.0135         
+Number of obs: 102, groups: Dog, 10
+
+Fixed effects:
+              Estimate Std. Error t value        Correlation of Fixed Effects:
+(Intercept) 1086.41495   14.41456   75.37                (Intr) day    I(d^2)
+day            6.23301    0.86512    7.20       day      -0.136              
+I(day^2)      -0.36852    0.03398  -10.85       I(day^2)  0.131 -0.679       
+Side          -9.19399    7.62640   -1.21       Side     -0.737  0.000  0.000
+
+anova( fm4Pixel, fm3Pixel )
+
+fm3Pixel: pixel ~ day + I(day^2) + (Side | Dog) + (-1 + day | Dog)
+fm4Pixel: pixel ~ day + I(day^2) + Side + (Side | Dog) + (-1 + day | Dog)
+         Df     AIC     BIC  logLik  Chisq Chi Df Pr(>Chisq)
+fm3Pixel  8  845.69  866.69 -414.84                         
+fm4Pixel  9  846.20  869.83 -414.10 1.4834      1     0.2232
+
+# LAB 2 ExERCISE: PROBLEM 12.2 IN GH.  THE FOLLOWING CODE SETS UP THE PROBLEM, BUT IS MEANT ONLY
+# TO GET YOU STARTED.  SEE PAGE 277 AND ExERCISE 11,4 FOR BACKGROUND)
+
+################################### ATTACH APPROPRIATE LIBRARIES ###############################
+library(lme4); library(arm); options(digits =  5)
+
+############################# READ IN DATA FROM AN ExCELL FILE #################################
+hiv.data <- read.csv("http://jgill.wustl.edu/data/allvar.csv")
+attach.all (hiv.data)
+
+################### FILTER TO "CONTROL" PATIENTS WITH INITIAL AGE FROM 1-5 YEARS ###############
+ok <- treatmnt==1 & !is.na(CD4PCT) & (baseage>1 & baseage<5)
+attach.all (hiv.data[ok,])
+
+############################# SETUP OUTCOME, AGE, AND TIME MEASUREMENTS ########################
+y <- sqrt (CD4PCT)			# OUTCOME OF INTEREST: THE SQUARE ROOT OF CD4 PERCENTAGE
+age.baseline <- baseage         	# KID'S AGE IN YEARS AT THE BEGINNING OF THE STUDY
+age.measurement <- visage      		# KID'S AGE IN YEARS AT THE TIME OF MEASUREMENT
+treatment <- treatmnt			# BETTER SPELLING
+time <- visage - baseage		# time GETS AGE IN STUDY MINUS AGE AT START OF STUDY
+
+################# PATIENTS NO LONGER LISTED CONSECUTIVELY, SET UP NEW ID NUMBERS 1:J ###########
+unique.pid <- unique (newpid)		# REMOVE REDUNDANT IDENTIFIERS FOR UNIQUE VECTOR
+n <- length (y)				# SET n AS THE NUMBER CASES AT LOWER LEVEL 
+J <- length (unique.pid)		# SET THE NUMBER OF GROUPS FROM UNIQUE IDENTIFIERS
+person <- rep (NA, n)			# CREAT person VECTOR WITH ALL NA VALUES
+for (j in 1:J){			     	# LOOP THROUGH GROUPS
+  person[newpid==unique.pid[j]] <- j	# person VECTOR GETS UNIQUE IDENTIFIERS AT j
+}					# CLOSE LOOP
+patient.id <- person			# STATEMENT MISSING IN ORIGINAL FILE
+
+########################## LOOK AT SOME SUMMARY PERSON-LEVEL STATISTICS ########################
+number.of.measurements <- as.vector (table (patient.id))
+patient.age.baseline <- baseage [age.baseline==age.measurement]
+
+################################ RUN MULTILEVEL MODEL USING lmer ###############################
+M1 <- lmer ( ~ + ( | ))
+
+
+
+
+
+
+
+random.imp.vec <- function(V)  {
+	gone <- is.na(V)
+	there <- V[!gone]
+	V[gone] <- sample(x=there,size=sum(gone),replace=TRUE)
+	return(V)
+}
+x <- c(1,2,NA,4,5,NA)
+random.imp.vec(x)
+[1] 1 2 5 4 5 1
+
+dust2.df <- read.table( "http://jgill.wustl.edu/data/dust2.asc",header=TRUE)
+summary(dust2.df)
+      cbr              dust            smoking            expo      
+ Min.   :0.0000   Min.   :  0.900   Min.   :0.0000   Min.   : 3.00  
+ 1st Qu.:0.0000   1st Qu.:  1.945   1st Qu.:0.0000   1st Qu.:16.00  
+ Median :0.0000   Median :  5.065   Median :1.0000   Median :25.00  
+ Mean   :0.2343   Mean   :  4.822   Mean   :0.7392   Mean   :25.06  
+ 3rd Qu.:0.0000   3rd Qu.:  6.260   3rd Qu.:1.0000   3rd Qu.:33.00  
+ Max.   :1.0000   Max.   : 24.000   Max.   :1.0000   Max.   :66.00  
+                  NA's   :578.000                                   
+
+sum(is.na(dust2.df))/prod(dim(dust2.df))
+0.1159711
+
+dust2.glm <- glm(cbr ~ dust+smoking+expo, family = binomial(link = logit),
+	data=dust2.df,na.action=na.omit)  
+summary(dust2.glm)
+ 
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)
+(Intercept) -3.442991   0.382028  -9.012  < 2e-16
+dust         0.143878   0.037892   3.797 0.000146
+smoking      0.835298   0.235169   3.552 0.000382
+expo         0.037629   0.008409   4.475 7.64e-06
+
+    Null deviance: 762.07  on 667  degrees of freedom
+Residual deviance: 709.61  on 664  degrees of freedom
+  (578 observations deleted due to missingness)
+AIC: 717.6
+
+dust2.df$dust <- random.imp.vec(dust2.df$dust)
+dust2.glm <- glm(cbr ~ dust+smoking+expo, family = binomial(link = logit),
+        data=dust2.df,na.action=na.fail)
+summary(dust2.glm)
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)
+(Intercept) -3.154958   0.275542 -11.450  < 2e-16
+dust         0.073567   0.027229   2.702 0.006896
+smoking      0.674027   0.173820   3.878 0.000105
+expo         0.040802   0.006169   6.614 3.74e-11
+
+    Null deviance: 1356.8  on 1245  degrees of freedom
+Residual deviance: 1286.4  on 1242  degrees of freedom
+AIC: 1294.4
+
+dust.df <- read.table( "http://jgill.wustl.edu/data/dust.asc",header=TRUE)
+dust.glm <- glm(cbr ~ dust+smoking+expo, family = binomial(link = logit),
+	data=dust.df);  
+summary.glm(dust.glm)
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -3.04785    0.24813 -12.283  < 2e-16 
+dust         0.09189    0.02323   3.956 7.63e-05 
+smoking      0.67683    0.17407   3.888 0.000101 
+expo         0.04016    0.00620   6.476 9.40e-11 
+
+    Null deviance: 1356.8  on 1245  degrees of freedom
+Residual deviance: 1278.3  on 1242  degrees of freedom
+AIC: 1286.3
+
+
+invest.df <- read.table("http://jgill.wustl.edu/data/investment.dat",header=TRUE)
+invest.df
+
+   real.investment trend real.gnp real.interest      inflation
+1            0.161     1    1.058          5.16           4.40
+2            0.172     2    1.088          5.87           5.15
+3            0.158     3    1.086          5.95           5.37
+4            0.173     4    1.122          4.88           4.99
+5            0.195     5    1.186          4.50           4.16
+6            0.217     6    1.254          6.44           5.75
+7            0.199     7    1.246          7.83           8.82
+8            0.163     8    1.232          6.25           9.31
+9            0.195     9    1.298          5.50           5.21
+10           0.231    10    1.370          5.46           5.83
+11           0.257    11    1.439          7.46           7.40
+12           0.259    12    1.479         10.28           8.64
+13           0.225    13    1.474         11.77           9.31
+14           0.241    14    1.503         13.42           9.44
+15           0.204    15    1.475         11.02           5.99
+
+##### FIRST DO A STANDARD LINEAR MODEL ON THE FULL DATA #####
+invest.lm <- lm(real.investment ~ trend + real.gnp + real.interest + inflation,
+                data=invest.df);  summary(invest.lm)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-0.0102779 -0.0022946  0.0004119  0.0029377  0.0080418 
+
+Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+(Intercept)   -5.091e-01  5.513e-02  -9.234 3.28e-06
+trend         -1.658e-02  1.972e-03  -8.409 7.59e-06
+real.gnp       6.704e-01  5.500e-02  12.189 2.52e-07
+real.interest -2.326e-03  1.219e-03  -1.908   0.0854
+inflation     -9.401e-05  1.347e-03  -0.070   0.9458
+
+Residual standard error: 0.006714 on 10 degrees of freedom
+Multiple R-Squared: 0.9724,     Adjusted R-squared: 0.9614 
+F-statistic: 88.19 on 4 and 10 DF,  p-value: 9.333e-08 
+
+##### NOW DELIBERATELY DELETE SOME DATA TO SIMULATE MISSINGNESS #####
+
+invest.missing.df <- invest.df
+invest.missing.df[1,1] <- invest.missing.df[8,5]  <- invest.missing.df [9,3] <- 
+			  invest.missing.df[13,4] <- NA
+
+sum(is.na(invest.missing.df))/prod(dim(invest.missing.df))        
+[1] 0.05333333
+
+# FROM THE lm HELP FILE:
+# na.action: a function which indicates what should happen when the data
+#         contain `NA's.  The default is set by the `na.action' setting
+#         of `options', and is `na.fail' if that is unset. The
+#         ``factory-fresh'' default is `na.omit'.
+#
+# STRONGLY ADVISED: options(na.action="na.fail")
+
+##### SECOND MODEL IS THE SAME SPECIFICATION BUT ON DATASET WITH MISSING #####
+invest.missing.lm <- lm(real.investment ~ trend + real.gnp + real.interest 
+                        + inflation, data=invest.missing.df,na.action=na.omit)
+summary.lm(invest.missing.lm)
+
+Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+(Intercept)   -0.4459603  0.0324644 -13.737 9.25e-06
+trend         -0.0144363  0.0012779 -11.297 2.88e-05
+real.gnp       0.6032710  0.0332504  18.143 1.80e-06
+real.interest -0.0031976  0.0007746  -4.128  0.00616
+inflation      0.0023307  0.0009748   2.391  0.05395
+
+Residual standard error: 0.002866 on 6 degrees of freedom
+  (4 observations deleted due to missingness)
+Multiple R-Squared: 0.9959,     Adjusted R-squared: 0.9931 
+F-statistic: 362.5 on 4 and 6 DF,  p-value: 2.79e-07 
+
+##### USE MULTIPLE IMPUTATION FROM THE MICE PROGRAM #####
+
+library(mice)
+
+# m=10 SPECIFIES 10 IMPUTATIONS (DEFAULT=5)
+
+m <- 10
+imp.invest <- mice(invest.missing.df,m)
+
+# WE CAN NOW USE THE complete FUNCTION TEN TIMES FOLLOWED BY 10 lm CALLS
+imp.invest.array <- array(NA,c(dim(invest.df),m))
+for (i in 1:m)  imp.invest.array[,,i] <- as.matrix(complete(imp.invest,i))
+
+##### THE lm.mids FUNCTION DOES THIS IN ONE COMMAND #####
+
+invest.mids <- lm.mids(real.investment ~ trend + real.gnp + real.interest 
+	+ inflation,data=imp.invest)
+pool(invest.mids)
+
+Pooled coefficients:
+  (Intercept)         trend      real.gnp real.interest    inflation 
+ -0.387215446  -0.011858096   0.546190553  -0.005146479  0.003709159 
+
+Fraction of information about the coefficients missing due to nonresponse: 
+  (Intercept)         trend      real.gnp real.interest   inflation 
+    0.1102147     0.1597954     0.1218865     0.1205782   0.1535351 
+\end{VM}
+
+# A FUNCTION TO CONVENIENTLY GET COEFICIENTS AND STANDARD ERRORS FROM A lm.mids 
+# OBJECT, param=1 GIVES THE COEFFICIENT ESTIMATES, param=2 GIVES THE STANDARD ERRORS
+
+lm.mids.vals <- function(obj,param) { 
+    out.mat <- NULL
+    for (i in 1:obj$call1$m) 
+        out.mat <- rbind(out.mat,summary.lm(obj$analyses[[i]])$coef[,param])
+    out.mat
+}
+
+# USE THIS FUNCTION TO GET THE REQUIRED VECTOR:
+
+impute.coef.vec <- apply(lm.mids.vals(invest.mids,1),2,mean)
+
+  (Intercept)         trend      real.gnp real.interest    inflation 
+ -0.387215446  -0.011858096   0.546190553  -0.005146479  0.003709159 
+
+# CALCULATE THE STANDARD TWO ERROR COMPONENTS BY HAND
+
+( between.var <- apply(lm.mids.vals(invest.mids,1),2,var) )
+  (Intercept)         trend      real.gnp real.interest     inflation 
+ 3.982399e-04  7.837802e-07  4.919964e-04  2.755307e-07  8.322247e-07 
+
+( within.var <- apply(lm.mids.vals(invest.mids,2)^2,2,mean) )
+  (Intercept)         trend      real.gnp real.interest     inflation 
+ 3.536579e-03  4.533230e-06  3.898968e-03  2.210504e-06  5.047015e-06 
+
+# USE THESE TO COMPUTE THE FINAL STANDARD ERROR VECTOR
+
+m <- 10
+( impute.se.vec <- sqrt(within.var + ((m+1)/m)*between.var) )
+  (Intercept)         trend      real.gnp real.interest    inflation 
+  0.063044769   0.002322798   0.066634554   0.001585430  0.002441815 
+
+# THE DEGREES OF FREEDOM FOR THE T-STATISTIC NEEDS TO BE ADJUSTED.
+# SEE LITTLE AND RUBIN (1987), PAGE 257
+
+( impute.df <- (m-1)*(1 + (1/(m+1)) * within.var/between.var)^2 )
+  (Intercept)         trend      real.gnp real.interest inflation 
+     29.39766      20.95260      26.63908      26.91547  21.65926 
+
+# CREATE A REGRESSION TABLE:
+
+out.table <- round( cbind( impute.coef.vec,impute.se.vec,
+        impute.coef.vec/impute.se.vec, 
+        1-pt(abs(impute.coef.vec/impute.se.vec),impute.df) ),6 )
+dimnames(out.table) <- list( c("(intercept)","trend","real.gnp","real.interest",
+        "inflation"), c("Estimate","Std. Error","t value","Pr(>|t|)") ) 
+
+out.table
+               Estimate Std. Error   t value Pr(>|t|)
+(intercept)   -0.390189   0.062981 -6.195350 0.000001
+trend         -0.011984   0.002325 -5.153349 0.000025
+real.gnp       0.549227   0.066607  8.245852 0.000000
+real.interest -0.005107   0.001576 -3.241617 0.001627
+inflation      0.003673   0.002421  1.516784 0.071848
+
+# NOT QUITE THE IMPROVEMENT WE HOPED FOR.  WHY?  TWO REASONS: (1) I  PARTICULARLY 
+# CHOSE THE FOUR MISSING VALUES TO "DO THE MOST DAMAGE", AND (2) THIS IS A 
+# RELATIVELY SMALL DATASET SO MI DOES NOT HAVE A LOT OF INFORMATION WITH WHICH
+# TO BUILD THE POSTERIOR DISTRIBUTION OF THE MISSING DATA.  
+
+# OR PUT THE PIECES TOGETHER WITH ONE SUMMARY FUNCTION
+summary(pool(invest.mids))
+                       est          se         t       df
+(Intercept)   -0.387215446 0.063044769 -6.141912 8.880183
+trend         -0.011858096 0.002322798 -5.105092 8.324535
+real.gnp       0.546190553 0.066634554  8.196807 8.751254
+real.interest -0.005146479 0.001585430 -3.246110 8.765773
+inflation      0.003709159 0.002441815  1.519017 8.395695
+                  Pr(>|t|)        lo 95        hi 95 
+(Intercept)   1.801275e-04 -0.530126490 -0.244304402      
+trend         8.169365e-04 -0.017178345 -0.006537846      
+real.gnp      2.157312e-05  0.394797063  0.697584043      
+real.interest 1.041540e-02 -0.008747632 -0.001545326      
+inflation     1.654781e-01 -0.001875817  0.009294134      
+\end{VM}
+
+dust2.df <- read.table( "http://jgill.wustl.edu/data/dust2.asc",header=TRUE)
+library(mice);  m <- 5;  imp.dust2 <- mice(dust2.df,m)
+dust3.glm <- glm.mids(cbr ~ dust+smoking+expo, family = binomial(link = logit),
+                      data=imp.dust2)
+summary(pool(dust3.glm))
+                    est          se         t         df     Pr(>|t|)       lo 95
+(Intercept) -3.37686445 0.349777612 -9.654318  168.55060 0.000000e+00 -4.06737387
+dust         0.12613589 0.051039923  2.471318   51.20283 1.682791e-02  0.02367882
+smoking      0.64561295 0.180901959  3.568855 1014.44146 3.753238e-04  0.29062809
+expo         0.04004765 0.006517554  6.144583  931.29865 1.186852e-09  0.02725686
+                  hi 95 missing        fmi
+(Intercept) -2.68635503      NA 0.36815695
+dust         0.22859295     578 0.70018227
+smoking      1.00059781       0 0.06132988
+expo         0.05283845       0 0.07686594
+
+dust.df <- read.table( "http://jgill.wustl.edu/data/dust.asc",header=TRUE)
+dust.glm <- glm(cbr ~ dust+smoking+expo, family = binomial(link = logit),
+        data=dust.df);
+summary.glm(dust.glm)
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)
+(Intercept) -3.04785    0.24813 -12.283  < 2e-16
+dust         0.09189    0.02323   3.956 7.63e-05
+smoking      0.67683    0.17407   3.888 0.000101
+expo         0.04016    0.00620   6.476 9.40e-11
+
+    Null deviance: 1356.8  on 1245  degrees of freedom
+Residual deviance: 1278.3  on 1242  degrees of freedom
+AIC: 1286.3
+
+harr <- read.table("http://jgill.wustl.edu/data/harrison3.txt",header=TRUE)
+apply(apply(harr,2,is.na),2,sum)
+
+harr.glm <- glm(NumberKilled ~ log(AgeofFirstAttacker) + log(as.numeric(Date)) +
+                AttackerisChallenged + FirstAttackerisFemale + DeviceisCar + 
+		TargetisCafe + TargetisMilitary + ResponsibleHamas, data=harr,
+		na.action=na.omit)
+
+summary(harr.glm)
+                        Estimate Std. Error t value Pr(>|t|)
+(Intercept)               12.195     12.793    0.95   0.3438
+log(AgeofFirstAttacker)   -3.369      4.170   -0.81   0.4219
+log(as.numeric(Date))      0.582      0.864    0.67   0.5026
+AttackerisChallenged      -3.700      1.604   -2.31   0.0241
+FirstAttackerisFemale      3.202      3.040    1.05   0.2960
+DeviceisCar               -2.018      2.453   -0.82   0.4137
+TargetisCafe               3.967      2.013    1.97   0.0527
+TargetisMilitary          -5.444      2.495   -2.18   0.0325
+ResponsibleHamas           5.363      1.649    3.25   0.0018
+
+(Dispersion parameter for gaussian family taken to be 40.519)
+
+    Null deviance: 4077.5  on 77  degrees of freedom
+Residual deviance: 2795.8  on 69  degrees of freedom
+  (25 observations deleted due to missingness)
+AIC: 520.5
+
+library(mice)
+
+attach(harr)
+harr2 <- cbind(NumberKilled, NumberInjured, AgeofFirstAttacker, Date, 
+	       ResponsibleisMartyrs, AttackerisChallenged, FirstAttackerisFemale, 
+	       ResponsibleisPIJ, TargetisBus, TargetisCheckpoint, DeviceisCar, 
+	       TargetisCafe, TargetisMilitary, ResponsibleHamas)
+detach(harr)
+
+imp.harr <- mice(harr2,m=10)
+
+harr.mids <- glm.mids(NumberKilled ~ log(AgeofFirstAttacker) + 
+		      log(as.numeric(Date)) + AttackerisChallenged + 
+		      FirstAttackerisFemale + DeviceisCar + TargetisCafe + 
+		      TargetisMilitary + ResponsibleHamas, data=imp.harr)
+
+cbind(summary(harr.glm)$coef[,1:2], summary(pool(harr.mids))[,1:2])
+
+                        Estimate Std. Error       est      se
+(Intercept)             12.19545   12.79263  9.873602 9.49898
+log(AgeofFirstAttacker) -3.36921    4.16985 -2.061098 3.09964
+log(as.numeric(Date))    0.58241    0.86409  0.067666 0.63617
+AttackerisChallenged    -3.69990    1.60370 -3.131864 1.23538
+FirstAttackerisFemale    3.20166    3.04025  2.815036 2.37085
+DeviceisCar             -2.01778    2.45341 -0.177107 1.75987
+TargetisCafe             3.96730    2.01286  4.893596 1.72607
+TargetisMilitary        -5.44396    2.49457 -3.888428 1.48603
+ResponsibleHamas         5.36309    1.64870  3.933507 1.26970
+\end{VM}
+
+harr <- read.table("http://jgill.wustl.edu/data/harrison4.txt",header=TRUE)
+apply(harr[,-1],2,table)
+
+$NumberKilled
+ 0  1  2  3  5  6  7  8  9 11 15 17 19 21 23 24 30 
+44 13  9  8  3  2  3  2  2  3  4  3  1  3  1  1  1 
+
+$NumberInjured
+  0   1   2   3   4   5   6   8   9  11  13  14  16  17  20  21  22  26  27  30 
+ 28   1   5   4   4   3   1   2   2   2   1   1   1   1   3   1   1   1   1   5 
+ 40  42  47  50  52  57  58  59  60  65  69  86  90 100 102 120 130 150 188 
+  3   1   1   7   1   1   1   2   5   1   1   1   1   3   1   1   1   2   1 
+
+$TotalCasualties
+  0   1   2   3   4   5   6   8   9  10  12  13  15  17  20  21  26  27  29  30 
+ 22   5   6   4   3   3   2   2   1   1   2   2   1   1   2   1   1   2   1   1 
+ 31  32  35  38  45  49  50  51  52  53  57  58  59  61  62  63  65  67  71  75 
+  1   1   1   1   1   2   1   1   1   1   2   1   1   2   1   1   2   2   3   2 
+ 81  91  93 105 106 123 126 141 145 151 180 199 
+  1   1   1   1   1   1   1   1   1   1   1   1 
+\end{VM}
+
+\section*{Terrorism Data}
+\begin{VM}
+$ResponsibleHamas                       $ResponsibleisMartyrs
+ 0  1                                    0  1 
+59 44                                   78 25 
+
+$ResponsibleisPIJ                       $ResponsibleisOther
+ 0  1                                    0  1 
+79 24                                   99  4 
+
+$TargetisMilitary                       $TargetisCivilian
+ 0  1                                    0  1 
+76 10                                   10 76 
+
+$TargetisBus                            $TargetisCafe
+ 0  1                                    0  1 
+89 14                                   89 14 
+
+$TargetisCheckpoint                     $TargetisResidence
+ 0  1                                     0   1 
+87 16                                   102   1 
+\end{VM}
+
+\section*{Terrorism Data}
+\begin{VM}
+$TargetisOffshore                       $TargetisStore
+  0   1                                   0  1 
+101   2                                  96  7 
+
+$TargetisStreet                         $TargetisTravelstop
+ 0  1                                     0  1 
+71 32                                    88 15 
+
+$DeviceisCar                            $DeviceisBoat
+ 0  1                                     0   1 
+89 14                                   101   2 
+
+$AttackisPrevented                      $AttackerisChallenged
+  0   1                                  0  1 
+101   2                                 63 40 
+
+$FirstAttackerisMale                    $FirstAttackerisFemale
+ 0  1                                    0  1 
+ 7 92                                   92  7 
+
+$AgeofFirstAttacker
+16 17 18 19 20 21 22 23 24 25 26 27 29 31 43 45 48 
+ 1  8  7 10 15 11 10 12  2  3  2  1  3  1  1  1  1 
+
+library(mgcv)
+harr.gam <- gam(NumberKilled ~ te(log(AgeofFirstAttacker),log(Date),k=3) +
+                AttackerisChallenged + FirstAttackerisFemale +
+                DeviceisCar + TargetisCafe + TargetisMilitary +
+                ResponsibleHamas, data=harr)
+
+summary(harr.gam)
+
+Parametric coefficients:
+                      Estimate Std. Error t value Pr(>|t|)
+(Intercept)              4.377      1.070   4.091  9.3e-05
+AttackerisChallenged    -4.059      1.144  -3.549 0.000616
+FirstAttackerisFemale    1.286      2.255   0.571 0.569737
+DeviceisCar              1.204      1.677   0.718 0.474763
+TargetisCafe             3.824      1.638   2.335 0.021752
+TargetisMilitary        -4.772      1.384  -3.448 0.000860
+ResponsibleHamas         4.027      1.184   3.400 0.001003
+
+Approximate significance of smooth terms:
+                                        edf Ref.df     F p-value
+te(log(AgeofFirstAttacker),log(Date)) 5.613  5.613 3.794 0.00255
+
+
+\section*{Book References to Note}
+\begin{ohlist}
+	\item   Little, Roderick J. A., and Donald B. Rubin.  2002.
+               	\emph{Statistical Analysis with Missing Data.}  Second Edition.
+                New York: John Wiley \& Sons.
+
+	\item	Rubin, Donald.  1987.
+                \emph{Multiple Imputation for Nonresponse in Surveys.}
+                New York: John Wiley \& Sons.
+
+	\item 	Schafer, Joseph L.
+		{\em Analysis of Incomplete Multivariate Data}.
+		Chapman \& Hall, 1997.
+\end{ohlist}
+
+Article References:
+
+\bibitem        Beale, E. M. L. and Little, R. J. A.  (1975).
+                \index{authorindex}{Beale, E. M. L.}
+                \index{authorindex}{Little, R. J. A.}
+                Missing Values in Multivariate Analysis.
+                \emph{Journal of the Royal Statistical Society, Series B} {\bf 37}, 129-145.
+
+\bibitem        Celeux, G., Forbes, F., Robert, C. P., and Titterington, D. M.  (2006).
+                \index{authorindex}{Celeux, G.}%
+                \index{authorindex}{Forbes, F.}%
+                \index{authorindex}{Robert, C. P.}%
+                \index{authorindex}{Titterington, D. M.}%
+                Deviance Information Criteria for Missing Data Models.
+                \emph{Bayesian Analysis} {\bf 1}, 1-24.
+
+\bibitem        Celeux, G., Forbes, F., Robert, C. P., and Titterington, D. M.  (2006).
+                \index{authorindex}{Celeux, G.}%
+                \index{authorindex}{Forbes, F.}%
+                \index{authorindex}{Robert, C. P.}%
+                \index{authorindex}{Titterington, D. M.}%
+                Deviance Information Criteria for Missing Data Models.
+                \emph{Bayesian Analysis} {\bf 1}, 1-24.
+
+\bibitem        Little, R. J. A., and Rubin, D. B.  (1983).
+                \index{authorindex}{Little, R. J. A.}
+                \index{authorindex}{Rubin, D. B.}
+                On Jointly Estimating Parameters and Missing Data by Maximizing the Complete-Data Likelihood.
+                \emph{The American Statistician} {\bf 37}, 218-220.
+
+\bibitem        Little, R. J. A., and Rubin, D. B.  (2002).
+                \index{authorindex}{Little, R. J. A.}
+                \index{authorindex}{Rubin, D. B.}
+                \emph{Statistical Analysis with Missing Data.} Second Edition.
+                New York: John Wiley \& Sons.
+

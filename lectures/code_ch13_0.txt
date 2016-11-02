@@ -1,0 +1,459 @@
+y ~ 1 + x + (1 + x | county)
+
+\begin{VM}
+M3 <- lmer(y ~ 1 + x + (1 + x | county))
+summary(M3)
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr   
+ county   (Intercept) 0.122    0.349           
+          x           0.118    0.344    -0.337 
+ Residual             0.557    0.746           
+number of obs: 919, groups: county, 85
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   1.4628     0.0539   27.15
+x            -0.6811     0.0876   -7.78
+
+Correlation of Fixed Effects:       (Intr)   x -0.381
+
+coef (M3)
+   (Intercept)        x
+1      1.14451 -0.54054
+2      0.93338 -0.77089
+3      1.47169 -0.66887
+:
+83     1.69429 -1.15131
+84     1.59912 -0.73273
+85     1.37879 -0.65315
+
+coef (M3)
+   (Intercept)        x
+1      1.14451 -0.54054
+2      0.93338 -0.77089
+3      1.47169 -0.66887
+:
+83     1.69429 -1.15131
+84     1.59912 -0.73273
+85     1.37879 -0.65315
+
+fixef(M3)
+(Intercept)           x 
+    1.46277    -0.68109 
+
+ranef(M3)
+An object of class “ranef.lmer”
+[[1]]
+   (Intercept)          x
+1   -0.3182642  0.1405481
+2   -0.5293905 -0.0898034
+3    0.0089163  0.0122211
+:
+83   0.2315155 -0.4702222
+84   0.1363534 -0.0516471
+85  -0.0839834  0.0279326
+
+is.numeric(ranef(M3)[[1]])
+[1] FALSE
+
+is.numeric(as.matrix(ranef(M3)[[1]]))
+[1] TRUE
+
+fixef(M3)
+(Intercept)           x
+    1.46277    -0.68109
+
+ranef(M3)
+   (Intercept)          x
+85  -0.0839834  0.0279326
+
+fixef(M3)
+(Intercept)           x
+    1.46277    -0.68109
+
+ranef(M3)
+   (Intercept)          x
+85  -0.0839834  0.0279326
+
+> u
+ [1] -0.6890476 -0.8473129 -0.1134588 -0.5933525 -0.1428905  0.3870567  0.2716137  0.2775787
+ [9] -0.3323155  0.0958646 -0.6082198  0.2736846 -0.7353201  0.3437812 -0.0598604 -0.5049960
+[17]  0.3395603 -0.6333907 -0.0241452  0.2638555  0.1557123  0.2950250  0.4149137  0.2242070
+[25]  0.1966106 -0.0965208  0.5035291 -0.4005970 -0.7518722 -0.6633476  0.3090203 -0.0533860
+[33]  0.1097329 -0.0078034 -0.8818289  0.3110299 -0.6915964 -0.6817088  0.1944477  0.4449037
+[41]  0.3947344  0.1496003  0.0137648  0.1658618  0.1404226  0.0239509 -0.2100595 -0.0932267
+[49]  0.2609325  0.3988499  0.2480469  0.4054518  0.2652217  0.2431501 -0.2047304 -0.0740277
+[57] -0.1632922  0.4786040  0.2661111  0.2811483 -0.4180535  0.3663223  0.3805780  0.1931461
+[65]  0.5280249 -0.2120454  0.0631156 -0.6834365  0.2372121 -0.4746737  0.1163954  0.2698057
+[73]  0.4707783  0.3160290 -0.0468401  0.4975945  0.1500824 -0.6720297  0.2124142 -0.1474843
+[81]  0.1832378  0.2360361  0.4632119 -0.0900243  0.3552870
+
+> u.full
+  [1] -0.6890476 -0.6890476 -0.6890476 -0.6890476 -0.8473129 -0.8473129 -0.8473129 -0.8473129
+  [9] -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129
+ [17] -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129
+ [25] -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129
+ [33] -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129
+ [41] -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129 -0.8473129
+   :
+[873] -0.1474843 -0.1474843 -0.1474843 -0.1474843 -0.1474843 -0.1474843 -0.1474843 -0.1474843
+[881] -0.1474843 -0.1474843 -0.1474843 -0.1474843 -0.1474843 -0.1474843 -0.1474843  0.1832378
+[889]  0.1832378  0.1832378  0.2360361  0.4632119  0.4632119  0.4632119  0.4632119  0.4632119
+[897]  0.4632119  0.4632119  0.4632119  0.4632119  0.4632119  0.4632119  0.4632119  0.4632119
+[905] -0.0900243 -0.0900243 -0.0900243 -0.0900243 -0.0900243 -0.0900243 -0.0900243 -0.0900243
+[913] -0.0900243 -0.0900243 -0.0900243 -0.0900243 -0.0900243  0.3552870  0.3552870
+
+M4 <- lmer(y ~ x + u.full + x:u.full + (1 + x | county))
+summary(M4)
+Random effects:
+Groups   Name        Variance Std.Dev. Corr  
+ county   (Intercept) 0.0156   0.125          
+ x           0.0941   0.307    0.409    0.409
+ Residual             0.5617   0.749          
+number of obs: 919, groups: county, 85
+
+Fixed effects:
+            Estimate Std. Error t value      Correlation of Fixed Effects:
+(Intercept)   1.4686     0.0353    41.6             (Intr) x      u.full
+x            -0.6710     0.0844    -7.9      x        -0.241              
+u.full        0.8081     0.0907     8.9      u.full    0.207 -0.092       
+x:u.full     -0.4195     0.2271    -1.8      x:u.full -0.093  0.173 -0.231
+
+   (Intercept)        x  u.full x:u.full
+1       1.4586 -0.64699 0.80806 -0.41946
+2       1.4958 -0.88908 0.80806 -0.41946
+3       1.4770 -0.64671 0.80806 -0.41946
+:
+85      1.4388 -0.70110 0.80806 -0.41946
+	
+(1 + x | county)
+y ~ x + u.full + x:u.full
+
+(a.se.M4 <- se.coef(M4)$county[,1])
+       1        2        3        4        5 
+0.115104 0.088738 0.113913 0.107827 0.114849 
+:
+      81       82       83       84       85 
+0.113973 0.123016 0.102748 0.104667 0.121417 
+
+
+(b.se.M4 <- se.coef(M4)$county[,2])
+      1       2       3       4       5       
+0.27765 0.24657 0.25677 0.23350 0.27673
+:
+     81      82      83      84      85 
+0.25710 0.30611 0.24339 0.27438 0.30546 
+	
+(a.hat.M4 <- coef(M4)$county[,1] + coef(M4)$county[,3]*u)
+ [1] 0.90183 0.81112 1.38532 1.04836 1.36381
+ [6] 1.76082 1.80116 1.72896 1.17220 1.54278
+[11] 1.02871 1.69382 0.89785 1.81452 1.40840
+[16] 1.03980 1.69203 0.98504 1.37662 1.69093
+[21] 1.62833 1.55381 1.78631 1.74244 1.73766
+[26] 1.36610 1.87382 1.14298 0.87602 0.93101
+[31] 1.75509 1.40663 1.60761 1.46626 0.73204
+[36] 1.81111 0.80251 1.00689 1.65030 1.88213
+[41] 1.83688 1.58336 1.48489 1.49105 1.50566
+[46] 1.45475 1.24872 1.35052 1.67190 1.80985
+[51] 1.71852 1.80635 1.64544 1.52360 1.35592
+[56] 1.36506 1.24744 1.86792 1.68286 1.67397
+[61] 1.14452 1.82848 1.78606 1.67482 1.86403
+[66] 1.36588 1.60164 0.94786 1.61865 0.91082
+[71] 1.53118 1.66351 1.84605 1.65053 1.46872
+[76] 1.88869 1.61307 0.94731 1.52746 1.32857
+[81] 1.72395 1.67474 1.77278 1.45802 1.72586
+	
+(b.hat.M4 <- coef(M4)$county[,2] + coef(M4)$county[,4]*u)
+ [1] -0.35796 -0.53366 -0.59912 -0.35033 -0.56350
+ [6] -0.85411 -0.43575 -0.71334 -0.42378 -0.76886
+[11] -0.36401 -0.78178 -0.33904 -0.77142 -0.66199
+[16] -0.48011 -1.00850 -0.27916 -0.81425 -0.77257
+[21] -0.65545 -0.99096 -0.86368 -0.63147 -0.42185
+[26] -0.76403 -0.84279 -0.48522 -0.34061 -0.39440
+[31] -0.76366 -0.66763 -0.66642 -0.68630 -0.29324
+[36] -0.54770 -0.49519 -0.17535 -0.66512 -0.78201
+[41] -0.67906 -0.73999 -0.95435 -1.01596 -0.92309
+[46] -0.71455 -0.79364 -0.62319 -0.94192 -0.81929
+[51] -0.72530 -0.83096 -0.86356 -1.08360 -0.44362
+[56] -0.82123 -0.73802 -0.80408 -0.84303 -0.81096
+[61] -0.30246 -0.52019 -0.72368 -0.71358 -0.92401
+[66] -0.43552 -0.37705 -0.35267 -0.81248 -0.63459
+[71] -0.83835 -0.80751 -0.87154 -0.87757 -0.49857
+[76] -0.85706 -0.80950 -0.40586 -0.96665 -0.78664
+[81] -0.43324 -0.75457 -1.22833 -0.57739 -0.85013
+
+postscript("figure13.2.ps")
+
+lower <- a.hat.M4 - a.se.M4
+upper <- a.hat.M4 + a.se.M4
+par(mfrow=c(1,2),mar=c(5,5,5,3),bg="lightgray",cex.lab=1.4,cex.axis=1.1)
+plot(u, a.hat.M4, ylim=range(lower,upper), pch=20,
+     xlab="County-Level Uranium", ylab=expression(alpha))
+segments (u, lower, u, upper, lwd=.5, col="gray10")
+curve(fixef(M4)[1] + fixef(M4)[3]*x, lwd=3, col="purple", add=TRUE)
+
+lower <- b.hat.M4 - b.se.M4
+upper <- b.hat.M4 + b.se.M4
+plot (u, b.hat.M4, ylim=range(lower,upper), pch=20,
+      xlab="County-Level Uranium", ylab=expression(beta))
+segments (u, lower, u, upper, lwd=.5, col="gray10")
+curve(fixef(M4)[2] + fixef(M4)[4]*x, lwd=3, col="purple", add=TRUE)
+
+dev.off()
+
+M5 <- lmer(y ~ x + u.full + (1 + x + u.full| county))
+summary(M5)
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr        
+ county   (Intercept) 5.70e-11 7.55e-06             
+          x           1.47e-01 3.83e-01 0.000       
+          u.full      1.27e-01 3.56e-01 0.000 0.661 
+ Residual             5.61e-01 7.49e-01             
+Number of obs: 919, groups: county, 85
+
+Fixed effects:                               Correlation of Fixed Effects:
+            Estimate Std. Error t value                       (Intr) x     
+(Intercept)   1.4586     0.0319    45.8               x      -0.336       
+x            -0.6379     0.0888    -7.2               u.full  0.086  0.143
+u.full        0.7616     0.0976     7.8
+            
+M3 <- lmer(y ~ 1 + x + (1 + x | county)); summary(M3)
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr   
+ county   (Intercept) 0.122    0.349           
+          x           0.118    0.344    -0.337 
+ Residual             0.557    0.746           
+number of obs: 919, groups: county, 85
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   1.4628     0.0539   27.15
+x            -0.6811     0.0876   -7.78
+
+M4 <- lmer(y ~ x + u.full + x:u.full + (1 + x | county)); summary(M4)
+Random effects:
+Groups   Name        Variance Std.Dev. Corr  
+ county   (Intercept) 0.0156   0.125          
+ x           0.0941   0.307    0.409    0.409
+ Residual             0.5617   0.749          
+number of obs: 919, groups: county, 85
+
+Fixed effects:
+            Estimate Std. Error t value      Correlation of Fixed Effects:
+(Intercept)   1.4686     0.0353    41.6             (Intr) x      u.full
+x            -0.6710     0.0844    -7.9      x        -0.241              
+u.full        0.8081     0.0907     8.9      u.full    0.207 -0.092       
+x:u.full     -0.4195     0.2271    -1.8      x:u.full -0.093  0.173 -0.231
+                        
+(a.hat.M4 <- coef(M4)$county[,1] + coef(M4)$county[,3]*u)
+(b.hat.M4 <- coef(M4)$county[,2] + coef(M4)$county[,4]*u)
+
+library(lme4); library(arm)
+smoking <- read.table("http://jgill.wustl.edu/data/smoke_pub.dat",header=TRUE)
+names(smoking)
+[1] "newid"    "sex.1.F." "parsmk"   "wave"     "smkreg"  
+smoking[1:12,]
+   	newid sex.1.F. parsmk wave smkreg
+	1      1        1      0    1      0
+	2      1        1      0    2      0
+	3      1        1      0    4      0
+	4      1        1      0    5      0
+	5      1        1      0    6      0
+	6      2        0      0    1      0
+	7      2        0      0    2      0
+	8      2        0      0    3      0
+	9      2        0      0    4      0
+	10     2        0      0    5      0
+	11     2        0      0    6      0
+	12     3        1      0    1      0
+
+lmer.out <- lmer(smkreg ~ wave + (1|newid), data=smoking, 
+	            family=binomial(link=logit))
+display(lmer.out)
+glmer(formula = smkreg ~ wave + (1 | newid), data = smoking, 
+    family = binomial(link = logit))
+            coef.est coef.se
+(Intercept) -6.41     0.27  
+wave         0.21     0.05  
+
+Error terms:
+ Groups   Name        Std.Dev.
+ newid    (Intercept) 4.17    
+ Residual             1.00    
+number of obs: 8730, groups: newid, 1760
+AIC = 17774.7, DIC = 17769
+deviance = 17768.7 
+
+lmer.out <- lmer(smkreg ~ wave + sex.1.F. + parsmk + (1|newid), data=smoking, 
+	            family=binomial(link=logit))
+display(lmer.out)
+glmer(formula = smkreg ~ wave + sex.1.F. + parsmk + (1 | newid), 
+    data = smoking, family = binomial(link = logit))
+            coef.est coef.se
+(Intercept) -6.60     0.30  
+wave         0.25     0.04  
+sex.1.F.     0.05     0.32  
+parsmk       1.17     0.31  
+
+Error terms:
+ Groups   Name        Std.Dev.
+ newid    (Intercept) 4.18    
+ Residual             1.00    
+number of obs: 8730, groups: newid, 1760
+AIC = 3935.8, DIC = 3925.8
+deviance = 3925.8 
+\end{VM}
+
+lmer.out <- lmer(smkreg ~ wave + sex.1.F. + wave:sex.1.F. + (1|newid), data=smoking, 
+	            family=binomial(link=logit))
+display(lmer.out)
+glmer(formula = smkreg ~ wave + sex.1.F. + wave:sex.1.F. + (1 | 
+    newid), data = smoking, family = binomial(link = logit))
+              coef.est coef.se
+(Intercept)   -4.85     0.26  
+wave           0.10     0.05  
+sex.1.F.      -0.88     0.36  
+wave:sex.1.F.  0.21     0.07  
+
+Error terms:
+ Groups   Name        Std.Dev.
+ newid    (Intercept) 3.47    
+ Residual             1.00    
+number of obs: 8730, groups: newid, 1760
+AIC = 4086.4, DIC = 4076.4
+deviance = 4076.4 
+
+postscript("weibull.distance.ps")
+par(mfrow=c(1,1),mar=c(3,3,3,3),col.axis="white",
+    col.lab="white", col.sub="white",col="white",bg="slategray")
+plot(c(-5,0),c(-7,2),type="n",xlab="log(Time)",ylab="log(Hazard)",
+    main="Vertical Distance Equal To 0.693")
+abline(h=0)
+abline(a=0.693,b=1.75,lty=1)
+abline(a=0,b=1.75,lty=2)
+dev.off()
+
+par(oma=c(1,1,1,1),mar=c(2,2,2,1),mfrow=c(1,2),col.axis="white",
+    col.lab="white",col.sub="white",col="white", bg="slategray")
+dur <- seq(0,10,length=300)
+plot(dur,dur^2,type="l",lwd=2,col="wheat", main="Regular Metric")
+lines(dur,2*dur^2,lwd=2,col="bisque")
+plot(log(dur),log(dur^2),type="l",lwd=2,col="wheat", main="Log Metric")
+lines(log(dur),log(2*dur^2),lwd=2,col="bisque")
+
+library(survival)
+data(kidney)
+head(kidney,10)
+      id time status age sex disease frail
+   1   1    8      1  28   1   Other   2.3
+   2   1   16      1  28   1   Other   2.3
+   3   2   23      1  48   2      GN   1.9
+   4   2   13      0  48   2      GN   1.9
+   5   3   22      1  32   1   Other   1.2
+   6   3   28      1  32   1   Other   1.2
+   7   4  447      1  31   2   Other   0.5
+   8   4  318      1  32   2   Other   0.5
+   9   5   30      1  10   1   Other   1.5
+   10  5   12      1  10   1   Other   1.5
+
+library(eha)
+postscript("kidney.ph.ps")
+par(mfrow=c(1,1),mar=c(3,3,3,3),col.axis="white",
+    col.lab="white", col.sub="white",col="white",bg="slategray",lwd=2)
+with(kidney, plot(Surv(rep(0,nrow(kidney)),time,status),strat=sex))
+dev.off()
+
+kidney1.out <- coxph(Surv(time,status) ~ sex + age, data=kidney)
+summary(kidney1.out)
+        coef exp(coef) se(coef)     z Pr(>|z|)
+sex -0.82931   0.43635  0.29895 -2.77   0.0055
+age  0.00203   1.00203  0.00925  0.22   0.8261
+
+    exp(coef) exp(-coef) lower .95 upper .95
+sex     0.436      2.292     0.243     0.784
+age     1.002      0.998     0.984     1.020
+
+Concordance= 0.662  (se = 0.046 )
+Rsquare= 0.089   (max possible= 0.993 )
+Likelihood ratio test= 7.12  on 2 df,   p=0.0285
+Wald test            = 8.02  on 2 df,   p=0.0181
+Score (logrank) test = 8.45  on 2 df,   p=0.0147
+
+install.packages("coxme")
+library(coxme)
+data(kidney)
+kidney2.out <- coxme(Surv(time,status) ~ sex + age + (1|id), data=kidney)
+print(kidney2.out)
+
+Cox mixed-effects model fit by maximum likelihood
+   Data: kidney
+   events, n = 58, 76
+   Iterations= 6 34
+                 NULL Integrated  Fitted
+Log-likelihood -187.9     -181.9 -166.17
+
+                  Chisq    df          p   AIC    BIC
+Integrated loglik 12.00  3.00 0.00739530  6.00  -0.18
+Penalized loglik  43.48 14.75 0.00011458 13.97 -16.43
+
+Model:  Surv(time, status) ~ sex + age + (1 | id)
+Fixed coefficients
+          coef exp(coef) se(coef)     z      p
+sex -1.3549853   0.25795  0.41713 -3.25 0.0012
+age  0.0042892   1.00430  0.01171  0.37 0.7100
+
+Random effects
+  Group Variable  Std Dev Variance
+  id    Intercept 0.67545 0.45623
+
+fixef(kidney2.out)
+          sex           age 
+-1.3549852701  0.0042892004 
+ranef(kidney2.out)
+ 0.514285501  0.312981298  0.184422411 -0.489289904  0.254271656  0.063924646 
+           7            8            9           10           11           12 
+ 0.677538398 -0.367396556 -0.039733287 -0.421879955 -0.097571798  0.052933687 
+          13           14           15           16           17           18 
+ 0.332254323 -0.410603097 -0.575683144  0.167737805 -0.138329832 -0.131842520 
+          19           20           21           22           23           24 
+-0.393831993  0.103431022 -1.547860215 -0.386972008  0.443174433  0.074684951 
+          25           26           27           28           29           30 
+ 0.064824787 -0.327930094  0.095907561  0.465382028  0.405734032  0.309895414 
+          31           32           33           34           35           36 
+ 0.417557869  0.211492863  0.204591001 -0.113169928  0.444184326 -0.203473269 
+          37           38 
+ 0.143432010 -0.299074418 
+
+kidney3.out <- coxme(Surv(time,status) ~ sex + age + (1|id) + (1|disease),
+ 		data=kidney)
+print(kidney3.out)
+
+Cox mixed-effects model fit by maximum likelihood
+   Data: kidney
+   events, n = 58, 76
+   Iterations= 10 54
+                 NULL Integrated  Fitted
+Log-likelihood -187.9     -181.9 -166.14
+
+                  Chisq    df          p   AIC    BIC
+Integrated loglik 12.00  4.00 0.01738300  4.00  -4.25
+ Penalized loglik 43.52 14.77 0.00011408 13.97 -16.47
+
+Model:  Surv(time, status) ~ sex + age + (1 | id) + (1 | disease)
+Fixed coefficients
+          coef exp(coef) se(coef)     z      p
+sex -1.3559216   0.25771 0.417331 -3.25 0.0012
+age  0.0042822   1.00429 0.011722  0.37 0.7100
+
+Random effects
+  Group   Variable  Std Dev    Variance
+  id      Intercept 0.67606440 0.45706308
+  disease Intercept 0.01998455 0.00039938
+
+dur <- c(2.114,1.234,1.671,1.070,2.168,2.080, 2.629,0.833,2.637,2.065,2.274)
+N <- c(15,27,20,28,15,15,14,38,12,17,15)
+qgamma(0.025,shape=sum(N),rate=sum(N*dur))
+[1] 0.52056
+qgamma(0.975,shape=sum(N),rate=sum(N*dur))
+[1] 0.67988
+

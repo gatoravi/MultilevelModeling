@@ -1,0 +1,384 @@
+model oecd;
+{
+    alpha ~ dnorm(0.0,0.0001);
+    beta ~ dnorm(0.0,0.0001);
+    tau ~ dgamma(0.1,0.1);
+    for (i in 1:N) {
+        mu[i] <- alpha + beta*x[i];
+        y[i] ~ dnorm(mu[i],tau);
+    }
+}
+
+list(x= c(0.20, 0.60, 1.10, 1.00, 1.00, 2.00, 2.20, 2.40, 2.50, 2.82, 2.90,
+              2.80, 2.90, 3.20,3.60, 3.90, 3.90, 3.50),
+      y= c(0.5,  0.6,  1.3,  0.4,  0.1,  0.9,  0.7, -0.1, -0.4, -0.4,  0.5, -0.6,
+             -0.9, -0.2, -0.3,  0.3, -0.3, -1.5),  N=18)
+
+list(alpha = 0.0, beta = 0.0, tau = 1.0)
+
+		model in "oecd.bug"
+		data in "oecd-data.R"
+		compile
+		inits in "oecd-init.R"
+		initialize
+		update 1000
+		monitor set alpha
+		monitor set beta
+		monitor set tau
+		update 5000
+		coda *
+		exit
+
+        model
+        {
+                for( i in 1 : N ) {
+                        logit(p[i]) <- alpha0 + alpha1 * metq[i] + alpha2 * np[i]
+                        erodd[i] ~ dbern(p[i])
+                }
+                alpha0 ~ dnorm(0.0,0.1)
+                alpha1 ~ dnorm(0.0,0.1)
+                alpha2 ~ dnorm(0.0,0.1)
+        }
+
+        list(alpha0 = 0, alpha1 = 0, alpha2 = 0)
+
+        list(erodd = c(1,1,1,0,1,0,1,...),metq = c(3,3,3,3,3,2,3,...),
+                  np = c(-1,-1,-1,1,-1,-1,1,...),N=1180)
+
+# varying-intercept model
+
+model {
+  for (i in 1:n){
+    y[i] ~ dnorm (y.hat[i], tau.y)
+    y.hat[i] <- a[county[i]] + b*x[i]
+  }
+  b ~ dnorm (0, .0001)
+  tau.y <- pow(sigma.y, -2)
+  sigma.y ~ dunif (0, 100)
+
+  for (j in 1:J){
+    a[j] ~ dnorm (mu.a, tau.a)
+  }
+  mu.a ~ dnorm (0, .0001)
+  tau.a <- pow(sigma.a, -2)
+  sigma.a ~ dunif (0, 100)
+}
+
+
+#Back to the 1988 Election
+model {
+  for (i in 1:n){
+    y[i] ~ dbin (p.bound[i], 1)
+    p.bound[i] <- max(0, min(1, p[i]))
+    logit(p[i]) <- Xbeta[i]
+    Xbeta[i] <- b.0 + b.female*female[i] + b.black*black[i] +
+      b.female.black*female[i]*black[i] +
+      a.age[age[i]] + a.edu[edu[i]] + a.age.edu[age[i],edu[i]] +
+      a.state[state[i]]
+  }
+  b.0 ~ dnorm (0, .0001)
+  b.female ~ dnorm (0, .0001)
+  b.black ~ dnorm (0, .0001)
+  b.female.black ~ dnorm (0, .0001)
+
+  for (j in 1:n.age) {a.age[j] ~ dnorm(0, tau.age)}
+  for (j in 1:n.edu) {a.edu[j] ~ dnorm(0, tau.edu)}
+  for (j in 1:n.age) {for (k in 1:n.edu){
+    a.age.edu[j,k] ~ dnorm(0, tau.age.edu)}}
+  for (j in 1:n.state) {
+    a.state[j] ~ dnorm(a.state.hat[j], tau.state)
+    a.state.hat[j] <- a.region[region[j]] + b.v.prev*v.prev[j]}
+  b.v.prev ~ dnorm (0, .0001) 
+  for (j in 1:n.region) {a.region[j] ~ dnorm(0, tau.region)}
+
+  tau.age <- pow(sigma.age, -2)
+  tau.edu <- pow(sigma.edu, -2)
+  tau.age.edu <- pow(sigma.age.edu, -2)
+  tau.state <- pow(sigma.state, -2)
+  tau.region <- pow(sigma.region, -2)
+
+  sigma.age ~ dunif (0, 100)
+  sigma.edu ~ dunif (0, 100)
+  sigma.age.edu ~ dunif (0, 100)
+  sigma.state ~ dunif (0, 100)
+  sigma.region ~ dunif (0, 100)
+}
+
+model {
+    for (i in 1:n) {
+        mu[i] <- alpha + beta1*age.years[i] + beta2*weight.lb[i];
+        pressure[i] ~ dnorm(mu[i],tau);
+    }
+    alpha  ~  dnorm(0.0,0.00001);
+    beta1  ~  dnorm(0.0,0.00001);
+    beta2  ~  dnorm(0.0,0.00001);
+    tau    ~  dgamma(2.0,0.1);
+}
+
+"pressure" <- c(132,155,130,142,150,128,126,118,180,124,150,134,140,142,128)
+"age.years" <- c(49,56,52,46,57,42,43,45,56,52,42,57,56,56,53)
+"weight.lb" <- c(145,216,115,170,172,166,164,152,275,221,175,132,188,178,168)
+"n" <- 15
+
+model in "blood.pressure.jags"
+data in "blood.pressure.jags.dat"
+compile
+inits in "blood.pressure.jags.init"
+initialize
+update 200000
+monitor set alpha
+monitor set beta1
+monitor set beta2
+monitor set tau
+update 200000
+coda *
+exit
+
+
+#Using \coda
+
+> install.packages(pkgs="coda",lib=".Rlib")
+> codamenu()
+CODA startup menu
+1:Read BUGS output files
+2:Use an mcmc object
+3:Quit
+Selection: 1
+Enter BUGS output filenames, separated by return key
+(leave blank to exit)
+1: Article.P-Agent/exec13.4
+Abstracting k[1] ... 500000 valid values
+Abstracting k[2] ... 500000 valid values
+Abstracting k[3] ... 500000 valid values
+Abstracting k[4] ... 500000 valid values
+Abstracting sigma ... 500000 valid values
+Abstracting theta[1] ... 500000 valid values
+Abstracting theta[2] ... 500000 valid values
+Abstracting theta[3] ... 500000 valid values
+Abstracting theta[4] ... 500000 valid values
+Abstracting theta[5] ... 500000 valid values
+Abstracting theta[6] ... 500000 valid values
+Abstracting theta[7] ... 500000 valid values
+Abstracting theta[8] ... 500000 valid values
+Abstracting theta[9] ... 500000 valid values
+Abstracting theta[10] ... 500000 valid values
+Abstracting theta[11] ... 500000 valid values
+Abstracting theta[12] ... 500000 valid values
+
+library(boa)
+boa.menu()
+
+Bayesian Output Analysis Program (BOA)
+Version 1.0.0 for UNIX R
+Copyright (c) 2001 Brian J. Smith <brian-j-smith@uiowa.edu>
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License or any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+For a copy of the GNU General Public License write to the Free
+Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+MA  02111-1307, USA, or visit their web site at
+http://www.gnu.org/copyleft/gpl.html
+
+NOTE: if the menu unexpectedly terminates, type "boa.menu(recover= TRUE)" to
+restart and recover your work
+
+BOA MAIN MENU
+*************
+1:File     >>
+2:Data     >>
+3:Analysis >>
+4:Plot     >>
+5:Options  >>
+6:Window   >>
+
+FILE MENU
+=========
+1:Import Data         >>
+2:Load Session
+3:Save Session
+4:Return to Main Menu
+5:Exit BOA
+Selection: 1
+
+IMPORT DATA MENU
+----------------
+1:BUGS Output File
+2:Flat ASCII File
+3:Data Matrix Object
+4:View Format Specifications
+5:Options...
+6:Back
+7:Return to Main Menu
+Selection: 1
+
+Enter filename prefix without the .ind or .out extension [Working Directory: ""]
+1: Article.P-Agent/exec.short
+Read 1 items
+Read 18 records
+
+Read 180000 records
++++ Data successfully imported +++
+
+IMPORT DATA MENU
+----------------
+1:BUGS Output File
+2:Flat ASCII File
+3:Data Matrix Object
+4:View Format Specifications
+5:Options...
+6:Back
+7:Return to Main Menu
+Selection: 7
+
+BOA MAIN MENU
+*************
+1:File     >>
+2:Data     >>
+3:Analysis >>
+4:Plot     >>
+5:Options  >>
+6:Window   >>
+Selection: 3
+
+ANALYSIS MENU
+=============
+1:Descriptive Statistics  >>
+2:Convergence Diagnostics >>
+3:Options...
+4:Return to Main Menu
+Selection: 1
+
+DESCRIPTIVE STATISTICS MENU
+---------------------------
+1:Autocorrelations
+2:Correlation Matrix
+3:Highest Probability Density Intervals
+4:Summary Statistics
+5:Back
+6:Return to Main Menu
+Selection: 1
+Selection: 3
+
+HIGHEST PROBABILITY DENSITY INTERVALS:
+======================================
+
+Alpha level = 0.05
+
+Chain: Article.P-Agent/exec.short
+---------------------------------
+
+          Lower Bound Upper Bound
+k[1]        -10.05000    -0.88130
+k[2]         -5.93900     1.43900
+k[3]         -1.82500     4.34400
+k[4]          4.33500    12.20000
+sigma         3.21600     8.75000
+tau           0.00945     0.06781
+theta[10]     0.22970     1.33000
+theta[11]    -1.08300     0.05925
+theta[12]     0.62890     3.93200
+theta[1]     -4.13900     2.87200
+theta[2]     -1.86500     0.55190
+theta[3]     -0.83480     0.17190
+theta[4]      0.36910     2.05700
+theta[5]      0.28810     3.25600
+theta[6]     -3.68100    -1.61800
+theta[7]      0.54550     2.15500
+theta[8]     -1.66400    -0.35180
+theta[9]     -0.14270     0.86110
+
+Selection: 4
+
+SUMMARY STATISTICS:
+===================
+
+Bin size for calculating Batch SE and (Lag 1) ACF = 50
+
+Chain: Article.P-Agent/exec.short
+---------------------------------
+
+                 Mean         SD     Naive SE     MC Error    Batch SE
+k[1]      -5.59806203 2.42271566 0.0242271566 0.1223327834 0.166725341
+k[2]      -2.42940786 1.94031614 0.0194031614 0.0968573426 0.132938124
+k[3]       1.35981060 1.60391981 0.0160391981 0.0778199101 0.108735974
+k[4]       8.40854860 1.96700713 0.0196700713 0.1001023043 0.134728021
+sigma      5.81126050 1.40852457 0.0140852457 0.0750363453 0.097579773
+tau        0.03498487 0.01690473 0.0001690473 0.0008895715 0.001164072
+theta[10]  0.76229775 0.29844260 0.0029844260 0.0153456628 0.020729837
+theta[11] -0.47943636 0.29944492 0.0029944492 0.0145505332 0.020824001
+theta[12]  2.12008306 0.82920162 0.0082920162 0.0403465492 0.049794374
+theta[1]  -0.44837512 2.13613478 0.0213613478 0.1104139879 0.150234893
+theta[2]  -0.64348071 0.63055720 0.0063055720 0.0309518537 0.038675137
+theta[3]  -0.31625976 0.25289936 0.0025289936 0.0131013569 0.017111244
+theta[4]   1.11830299 0.44912150 0.0044912150 0.0226997128 0.031597119
+theta[5]   1.71032372 0.77381701 0.0077381701 0.0352462425 0.045846571
+theta[6]  -2.67945860 0.58558035 0.0058558035 0.0312714378 0.041294397
+theta[7]   1.18996756 0.47287189 0.0047287189 0.0219656503 0.033222243
+theta[8]  -0.85445191 0.33927737 0.0033927737 0.0181838079 0.023634776
+theta[9]   0.34877322 0.24568023 0.0024568023 0.0128376865 0.016650594
+
+          Batch ACF       0.025      0.5       0.975 MinIter MaxIter Sample
+k[1]      0.9075014 -9.87607500 -5.73300 -0.63469500       1   10000  10000
+k[2]      0.8830128 -5.81300000 -2.56200  1.60505000       1   10000  10000
+k[3]      0.8511580 -1.88007500  1.40200  4.30900000       1   10000  10000
+k[4]      0.8960185  4.43700000  8.49550 12.31000000       1   10000  10000
+sigma     0.9565878  3.62395000  5.70100  9.32520000       1   10000  10000
+tau       0.9305307  0.01149950  0.03077  0.07616125       1   10000  10000
+theta[10] 0.9185856  0.23176000  0.75560  1.33500000       1   10000  10000
+theta[11] 0.9200565 -1.03525000 -0.47600  0.16190000       1   10000  10000
+theta[12] 0.5477688  0.55450000  2.07700  3.88300000       1   10000  10000
+theta[1]  0.9651961 -4.03800000 -0.26025  3.02500000       1   10000  10000
+theta[2]  0.6337737 -1.98707500 -0.57785  0.49360000       1   10000  10000
+theta[3]  0.8160511 -0.83090000 -0.30690  0.19560000       1   10000  10000
+theta[4]  0.9594892  0.41830000  1.04000  2.13605000       1   10000  10000
+theta[5]  0.6044240  0.31262750  1.67100  3.31900000       1   10000  10000
+theta[6]  0.9783000 -3.80200000 -2.58350 -1.69700000       1   10000  10000
+theta[7]  0.9560934  0.52260000  1.09300  2.13900000       1   10000  10000
+theta[8]  0.9260070 -1.76300000 -0.77130 -0.38477250       1   10000  10000
+theta[9]  0.8242078 -0.08368125  0.32735  0.93360000       1   10000  10000
+
+
+gibbs.bdr <- function(theta.matrix,x,reps)  {
+    for (i in 2:(reps+1))  {
+        P  <- theta.matrix[(i-1),1] 
+        u1 <- theta.matrix[(i-1),2]
+        u2 <- theta.matrix[(i-1),3] 
+	z  <- theta.matrix[(i-1),4:ncol(theta.matrix)]
+        P  <- rbeta(1,1+sum(z),length(x)+1-sum(z))
+        u1 <-  1000 
+	while(u1>u2) u1 <- rnorm(1,(sigsq.nu*(x%*%z)+nu1)/(sigsq.nu*sum(z)+1), 
+				sigsq.nu/(sigsq.nu*sum(z)+1) )
+        u2 <- -1000 
+	while(u1>u2) u2 <- rnorm(1,(sigsq.nu*(x%*%(1-z))+nu2)/(sigsq.nu*sum(1-z)+1), 
+				sigsq.nu/(sigsq.nu*sum(1-z)+1) )
+        p  <- P*exp(-0.5*(x-u1)^2)/( P*exp(-0.5*(x-u1)^2) + (1-P)*exp(-0.5*(x-u2)^2) )
+        z  <-  rbinom(length(p),1,p)
+        theta.matrix[i,] <- c(P,u1,u2,z)
+    }
+    return(theta.matrix)
+}
+
+sigsq.nu <- 20; nu1 <- 5; nu2 <- 20; num.reps <- 250
+x <- c(2.3,3.7,4.1,10.9,11.6,13.8,20.1,21.4,22.3)
+mix.out <- rbind(start,matrix(NA,nrow=num.reps,ncol=length(start)))
+start <- matrix(c(0.3,7,20,rbinom(length(x),1,0.5)),1,length(x)+3)
+tol <- .Machine$double.eps
+
+mix.out <- gibbs.bdr(mix.out,x,num.reps)
+apply(mix.out,2,mean)
+
+		N <- 64000; x.vals <- 0; u.vals <- 0
+		for (i in 2:N)  {
+  		u.vals <- c(u.vals,runif(1,0,exp(-0.5*x.vals[(i-1)]^2)))
+  		x.vals <- c(x.vals,runif(1,-sqrt(-2*log(u.vals[i])),
+                                 		sqrt(-2*log(u.vals[i]))))
+		}
+

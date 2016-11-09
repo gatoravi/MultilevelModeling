@@ -2,7 +2,7 @@
 title: "HW7"
 author: "Avinash Ramu"
 date: "October 30, 2016"
-output: html_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Q16.3
 
+The coefficient on time is -0.37, for each unit increase in time, the CD4 square root decreases
+by -0.37
 
 ```{r q1_1}
 #Use Andrew Stone's code from HW3 to ensure similar pre-processing
@@ -72,7 +74,7 @@ inits <- function (){list(a=rnorm(J),
                                 sigma.a=runif(1))}
 # Defining which parameters of your model you want JAGS to return to you 
 # In the book (page 366), they are missing "g.0" and "g.1"
-parameters <- c ("a", "b", "sigma.y", "sigma.a")
+parameters <- c ("b", "sigma.y", "sigma.a")
 # Now, we can actually run the model with the jags() function
 m1 <- jags(data=data, 
                 inits=inits, 
@@ -86,6 +88,10 @@ m1
 
 
 ###PartB
+
+The coefficient on time is similar as part A, the coefficient on treatment is 0.180
+and the coefficient on baseage is -0.119. The Rhat on the coefficient for treatment 
+appears to be higher. 
 ```{r q1_3}
 treatment <- data.noNA.CD4$treatmnt
 baseage <- data.noNA.CD4$baseage
@@ -114,7 +120,7 @@ inits <- function (){list(a=rnorm(J),
                                 b3 = rnorm(1),
                                 sigma.y=runif(1), 
                                 sigma.a=runif(1))}
-parameters <- c ("a", "b1", "b2", "b3", "sigma.y", "sigma.a")
+parameters <- c ("b1", "b2", "b3", "sigma.y", "sigma.a")
 m2 <- jags(data=data, 
                 inits=inits, 
                 parameters.to.save=parameters, 
@@ -125,8 +131,14 @@ m2 <- jags(data=data,
 m2
 ```
 
-## Q16.8
+### Part C - written
 
+### Part D
+Plot the models and explain
+```{r q1_4}
+plot(m1)
+plot(m2)
+```
 
 ```{r q2_1}
 ##Use Andy's tutorial code
@@ -193,7 +205,7 @@ radon.inits <- function (){list(a=rnorm(J),
 
 # Defining which parameters of your model you want JAGS to return to you 
 # In the book (page 366), they are missing "g.0" and "g.1"
-radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+radon.parameters <- c ("b", "sigma.y", "sigma.a", "g.0", "g.1")
 
 # Now, we can actually run the model with the jags() function
 radon.3 <- jags(data=radon.data, 
@@ -201,7 +213,7 @@ radon.3 <- jags(data=radon.data,
                 parameters.to.save=radon.parameters, 
                 model.file=textConnection(the.model), # Note the textConnection() function
                 n.chains=3, 
-                n.iter=500, 
+                n.iter=5000, 
                 DIC=F)
 radon.3
 ```
@@ -240,7 +252,7 @@ radon.inits <- function (){list(a=rnorm(J),
 
 # Defining which parameters of your model you want JAGS to return to you 
 # In the book (page 366), they are missing "g.0" and "g.1"
-radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+radon.parameters <- c ("b", "sigma.y", "sigma.a", "g.0", "g.1")
 
 # Now, we can actually run the model with the jags() function
 radon.3 <- jags(data=radon.data, 
@@ -248,7 +260,7 @@ radon.3 <- jags(data=radon.data,
                 parameters.to.save=radon.parameters, 
                 model.file=textConnection(the.model), # Note the textConnection() function
                 n.chains=3, 
-                n.iter=500, 
+                n.iter=5000, 
                 DIC=F)
 radon.3
 ```
@@ -287,7 +299,7 @@ radon.inits <- function (){list(a=rnorm(J),
 
 # Defining which parameters of your model you want JAGS to return to you 
 # In the book (page 366), they are missing "g.0" and "g.1"
-radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+radon.parameters <- c ("b", "sigma.y", "sigma.a", "g.0", "g.1")
 
 # Now, we can actually run the model with the jags() function
 radon.3 <- jags(data=radon.data, 
@@ -295,7 +307,7 @@ radon.3 <- jags(data=radon.data,
                 parameters.to.save=radon.parameters, 
                 model.file=textConnection(the.model), # Note the textConnection() function
                 n.chains=3, 
-                n.iter=500, 
+                n.iter=5000, 
                 DIC=F)
 radon.3
 ```
@@ -334,7 +346,7 @@ radon.inits <- function (){list(a=rnorm(J),
 
 # Defining which parameters of your model you want JAGS to return to you 
 # In the book (page 366), they are missing "g.0" and "g.1"
-radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+radon.parameters <- c ("b", "sigma.y", "sigma.a", "g.0", "g.1")
 
 # Now, we can actually run the model with the jags() function
 radon.3 <- jags(data=radon.data, 
@@ -342,7 +354,7 @@ radon.3 <- jags(data=radon.data,
                 parameters.to.save=radon.parameters, 
                 model.file=textConnection(the.model), # Note the textConnection() function
                 n.chains=3, 
-                n.iter=500, 
+                n.iter=5000, 
                 DIC=F)
 radon.3
 ```
@@ -381,7 +393,7 @@ radon.inits <- function (){list(a=rnorm(J),
 
 # Defining which parameters of your model you want JAGS to return to you 
 # In the book (page 366), they are missing "g.0" and "g.1"
-radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+radon.parameters <- c ("b", "sigma.y", "sigma.a", "g.0", "g.1")
 
 # Now, we can actually run the model with the jags() function
 radon.3 <- jags(data=radon.data, 
@@ -389,7 +401,7 @@ radon.3 <- jags(data=radon.data,
                 parameters.to.save=radon.parameters, 
                 model.file=textConnection(the.model), # Note the textConnection() function
                 n.chains=3, 
-                n.iter=500, 
+                n.iter=5000, 
                 DIC=F)
 radon.3
 ```
@@ -429,7 +441,7 @@ radon.inits <- function (){list(a=rnorm(J),
 
 # Defining which parameters of your model you want JAGS to return to you 
 # In the book (page 366), they are missing "g.0" and "g.1"
-radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+radon.parameters <- c ("b", "sigma.y", "sigma.a", "g.0", "g.1")
 
 # Now, we can actually run the model with the jags() function
 radon.3 <- jags(data=radon.data, 
@@ -437,7 +449,7 @@ radon.3 <- jags(data=radon.data,
                 parameters.to.save=radon.parameters, 
                 model.file=textConnection(the.model), # Note the textConnection() function
                 n.chains=3, 
-                n.iter=500, 
+                n.iter=5000, 
                 DIC=F)
 radon.3
 ```
@@ -494,7 +506,7 @@ inits <- function (){list(a=rnorm(J),
                                 sigma.y=runif(1), 
                                 sigma.a=runif(1),
                                 sigma.b4 = runif(1))}
-parameters <- c ("a", "b1", "b2", "b3", "b4", "sigma.y", "sigma.a")
+parameters <- c ("b1", "b2", "b3", "sigma.y", "sigma.a")
 m3 <- jags(data=data, 
                 inits=inits, 
                 parameters.to.save=parameters, 
@@ -588,7 +600,7 @@ inits <- function (){list(a = rnorm(1),
                                 sigma.a = runif(1),
                                 sigma.b = runif(J1),
                                 sigma.c = runif(J2))}
-parameters <- c ("a", "b", "c", "sigma.y", "sigma.a", "sigma.b", "sigma.c")
+parameters <- c ("b", "c", "sigma.y", "sigma.a", "sigma.b", "sigma.c")
 m4 <- jags(data=data, 
                 inits=inits, 
                 parameters.to.save=parameters, 
@@ -598,3 +610,6 @@ m4 <- jags(data=data,
                 DIC=F)
 m4
 ```
+
+
+

@@ -109,3 +109,69 @@ for(i in counties){
 
 ```
 
+
+##Q18.4
+### Part A
+I have written this out on paper.
+
+
+### Part B
+```{r q3_1}
+beauty <- read.csv("ProfEvaltnsBeautyPublic.csv")
+attach(beauty)
+C <- 3
+censored <- courseevaluation < 3
+censored_eval <- ifelse(censored, C, courseevaluation)
+Loglik <- function (parameter.vector, x, y, C) {
+  a <- parameter.vector[1]
+  b <- parameter.vector[2]
+  sigma <- parameter.vector[3]
+  ll.vec <- ifelse (y<C, dnorm (y, a + b*x, sigma, log=TRUE),
+  pnorm ((a + b*x - C)/sigma, log=TRUE))
+  return (sum (ll.vec))
+}
+inits <- runif (3)
+mle <- optim (inits, Loglik, lower=c(-Inf,-Inf,1.e-5), method="L-BFGS-B", control=list(fnscale=-1), x = btystdave, y = censored_eval, C=200)
+mle$par
+```
+
+
+### Part C
+```{r q3_3}
+beauty <- read.csv("ProfEvaltnsBeautyPublic.csv")
+attach(beauty)
+model1 <- "model { 
+  for (i in 1:n){
+    isCensored[i] ~ dinterval(y[i], censorLimitVec)
+    y[i] ~ dnorm(yhat[i], tau.y)
+    yhat[i] <- a + b*x[i]
+  }
+  a ~ dnorm(0, 1E-6)
+  b ~ dnorm(0, 1E-6)
+  tau.y <- pow(sigma.y, -2)
+  sigma.y ~ dunif (0, 100)
+}"
+C <- 3
+N <- length(courseevaluation)
+censored <- courseevaluation < 3
+y1 <- ifelse (censored, NA, courseevaluation)
+censorLimitVec = 3
+beauty_data <- list (x = btystdave, y = y1, n = N, isCensored = as.numeric(censored), censorLimitVec = censorLimitVec)
+beauty_inits <- function() { list(a=rnorm(1), b=rnorm(1), sigma.y=runif(1)) }
+params <- c ("a", "b", "sigma.y")
+radon.3 <- jags(data = beauty_data, 
+                inits = beauty_inits, 
+                parameters.to.save = params, 
+                model.file = textConnection(model1), # Note the textConnection() function
+                n.chains = 3, 
+                n.iter = 5000, 
+                DIC = F)
+radon.3
+```
+
+### Part D
+Regression without censoring
+```{r q3_4}
+unpooled_model <- lm(courseevaluation ~ btystdave)
+unpooled_model
+```

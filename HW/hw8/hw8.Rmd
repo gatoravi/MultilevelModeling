@@ -2,7 +2,7 @@
 title: "HW8"
 author: "Avinash Ramu"
 date: "November 9, 2016"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -106,9 +106,9 @@ for(i in counties){
 for(i in counties){
   curve(dnorm(x, radon.3[[2]]$mean$a[i], radon.3[[2]]$sd$a[i]), from=-0.5, to=4.5, main="Posterior", ylab="", xlim=c(-5,5))
 }
-
 ```
-
+The prior, likelihood and posterior have been plotted. The inference remains the same as in the previous 
+homework. The counties with a larger sample size drive the posterior more from the prior towards the likelihood.
 
 ##Q18.4
 ### Part A
@@ -133,8 +133,12 @@ Loglik <- function (parameter.vector, x, y, C) {
 inits <- runif (3)
 mle <- optim (inits, Loglik, lower=c(-Inf,-Inf,1.e-5), method="L-BFGS-B", control=list(fnscale=-1), x = btystdave, y = censored_eval, C=200)
 mle$par
+
 ```
 
+The coefficient for beauty is 0.12, for every unit increase in beauty there is
+a 0.12 increase in the coursevaluation. This could indicate some sort of bias towards course
+evaluations based on the looks of the instructor.
 
 ### Part C
 ```{r q3_3}
@@ -168,6 +172,11 @@ radon.3 <- jags(data = beauty_data,
                 DIC = F)
 radon.3
 ```
+The BUGs model assigns a similar intercept as the MLE model. The coefficient on beauty is a little
+smaller 0.08 compared to 0.12 from the MLE model. This could reflect the Bayesian aspect of the model
+with respect to censoring, this is a little unintuitive. Perhaps there is a problem with my model
+specification. The coefficient is still positive and indicates a 0.08 increase in course evaluation
+for a unit increase in beauty.
 
 ### Part D
 Regression without censoring
@@ -175,3 +184,6 @@ Regression without censoring
 unpooled_model <- lm(courseevaluation ~ btystdave)
 unpooled_model
 ```
+
+
+The intercept and coefficient from Part D i.e the uncensored model look very similar to Part B, the MLE estimate with censoring. The coefficient on beauty is 0.13 which is slightly higher than part B (0.12) and part C (0.08). This is the increase in courseevaluation for a unit increase in beauty.

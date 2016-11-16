@@ -25,8 +25,31 @@ abline(lm(star98.missing$READING.ABOVE.50~star98.missing$PTRATIO),lwd=3)
 mtext(side=1,cex=1.3,line=2.5,"District Pupil/Teacher Ratio")
 mtext(side=2,cex=1.3,line=2.5,"District Percent Above National Reading Median")
 mtext(side=3,cex=1.5,outer=TRUE,line=-1,"Calfornia 9th Grade by District, 1998")
-```
 
+
+#Determine how much missing data there is:
+sum(is.na(star98.missing))/prod(dim(star98.missing))
+summary(star98.missing)
+hist(apply(apply(star98.missing, 2, is.na), 1, sum))
+
+
+lm1 <- lm(star98.missing$READING.ABOVE.50~star98.missing$SUBSIDIZED.LUNCH, na.action=na.omit)
+lm2 <- lm(star98.missing$READING.ABOVE.50~star98.missing$PTRATIO, na.action=na.omit)
+summary(lm1)
+summary(lm2)
+
+library(mice)
+m <- 10
+star98.imp <- mice(star98.missing, m)
+star98.mids1 <- lm.mids(star98.missing$READING.ABOVE.50~star98.missing$SUBSIDIZED.LUNCH,
+	                      data=star98.imp)
+star98.mids2 <- lm.mids(star98.missing$READING.ABOVE.50~star98.missing$PTRATIO,
+	                      data=star98.imp)
+pool(star98.mids1)
+pool(star98.mids2)
+
+```
+One third of the cells are missing.
 ## Q2
 Explain what the following R does and why you would not want to do this.
 ```{r q2_1}
@@ -44,6 +67,7 @@ mi <- function(data.mat) {
 }
 ```
 
-Sets the missing values in a column to the mean value of the column.
+The code sets the missing values in a column to the mean value of the column. This underestimates the variance for that column. It also distorts relationships between variables by pulling the estimation of the correlation between them to zero.
+
 ## Q3
 Find an article in your literature that uses case-wise deletion. Discuss how you might replicate the model and improve the work.

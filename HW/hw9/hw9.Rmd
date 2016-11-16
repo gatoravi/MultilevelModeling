@@ -2,7 +2,7 @@
 title: "HW9"
 author: "Avinash Ramu"
 date: "November 13, 2016"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -15,12 +15,12 @@ Also run a model omitting cases with missing data. What differences do you obser
 
 ```{r q1_1}
 star98.missing <- read.table("star98.missing.dat",header=TRUE)
-par(mfrow=c(1,2),mar=c(3,3,3,3))
-plot(star98.missing$SUBSIDIZED.LUNCH,star98.missing$READING.ABOVE.50,pch="+",col="blue")
+#par(mfrow=c(1,2),mar=c(3,3,3,3))
+plot(star98.missing$SUBSIDIZED.LUNCH,star98.missing$READING.ABOVE.50,pch="+",col="blue", xlab = "", ylab = "")
 abline(lm(star98.missing$READING.ABOVE.50~star98.missing$SUBSIDIZED.LUNCH),lwd=3)
 mtext(side=1,cex=1.3,line=2.5,"District Percent Receiving Subsidized Lunch")
 mtext(side=2,cex=1.3,line=2.5,"District Percent Above National Reading Median")
-plot(star98.missing$PTRATIO,star98.missing$READING.ABOVE.50,pch="+",col="blue")
+plot(star98.missing$PTRATIO,star98.missing$READING.ABOVE.50,pch="+",col="blue", xlab = "", ylab = "")
 abline(lm(star98.missing$READING.ABOVE.50~star98.missing$PTRATIO),lwd=3)
 mtext(side=1,cex=1.3,line=2.5,"District Pupil/Teacher Ratio")
 mtext(side=2,cex=1.3,line=2.5,"District Percent Above National Reading Median")
@@ -28,20 +28,27 @@ mtext(side=3,cex=1.5,outer=TRUE,line=-1,"Calfornia 9th Grade by District, 1998")
 
 
 #Determine how much missing data there is:
+library(mice)
 sum(is.na(star98.missing))/prod(dim(star98.missing))
 summary(star98.missing)
-hist(apply(apply(star98.missing, 2, is.na), 1, sum))
+#hist(apply(apply(star98.missing, 2, is.na), 1, sum))
+#Look at pattern of missingness, 0 implies missing 1 implies not missing
+md.pattern(star98.missing)
 
-
-lm1 <- lm(star98.missing$READING.ABOVE.50~star98.missing$SUBSIDIZED.LUNCH, na.action=na.omit)
-lm2 <- lm(star98.missing$READING.ABOVE.50~star98.missing$PTRATIO, na.action=na.omit)
+star98_omit <- na.omit(star98.missing)
+lm1 <- lm(star98_omit$READING.ABOVE.50~star98_omit$SUBSIDIZED.LUNCH)
+lm2 <- lm(star98_omit$READING.ABOVE.50~star98_omit$PTRATIO)
 summary(lm1)
 summary(lm2)
 
-library(mice)
-md.pattern(star98.missing)
+```
+
+```{r q1_2, include=FALSE}
 m <- 50
 star98.imp <- mice(star98.missing, m)
+```
+
+```{r q1_3}
 star98.mids1 <- lm.mids(star98.missing$READING.ABOVE.50~star98.missing$SUBSIDIZED.LUNCH,
 	                      data=star98.imp)
 star98.mids2 <- lm.mids(star98.missing$READING.ABOVE.50~star98.missing$PTRATIO,
@@ -50,9 +57,21 @@ summary(pool(star98.mids1))
 summary(pool(star98.mids2))
 
 ```
+
 A third of the cells have missing data. Only eight rows have all three columns not missing.
 The missing data appears to be pretty random across the columns with no immediately apparent
 pattern of missingness.
+
+The inferences using the MICE data seem to be similar to the inferences from the data
+which omits missing data. This might be because our data is MCAR and we have enough observations
+after omiting. I do not observe a significant difference between the models with missing data
+and imputed data.
+
+In the first model, the coefficient for SUBSIDIZED.LUNCH is significant and negative. This looks
+similar to what we'd expect from the plot. There's a decrease of -0.7679826 in reading units for
+every percent increase in subsidized lunch.
+
+In the second model, the coefficient for PT ratio is not significant.
 
 
 ## Q2
@@ -76,3 +95,12 @@ The code sets the missing values in a column to the mean value of the column. Th
 
 ## Q3
 Find an article in your literature that uses case-wise deletion. Discuss how you might replicate the model and improve the work.
+
+Quantitative trait loci(QTL) are genetic loci that show association with a quantitative trait, for e.g gene expression. Studies that
+try to identify expression QTLs perform regressions between the genetic variation in an individual and the gene expression on a gene by gene basis. If the gene expression readout for a particular gene is unavailable or if genetic variation hasn't been typed at a nearby
+locus studies tend to exclude those individuals from the regression.
+
+Genotype imputation can be used to infer the genetic variation for the samples which have missing genotypes. The patterns of genetic variation are shared in the population due to a phenomenon known as linkage disequilibrium. This affords us to make probabilistic guesses about missing genotypes. This can be used in the eQTL regressions and is pretty widely used now since we have a good idea of what normal genetic variation in humans looks like after large sequencing efforts.
+
+One example of such a study in the early days of modern human genetics is http://www.nature.com/nature/journal/v430/n7001/full/nature02797.html where the authors state "We used PedStat21 to check for mendelian inconsistencies. This resulted in the removal of 815 genotypes at 237 distinct SNP markers." Imputing these genotypes could be a better approach though it might not affect the results significantly owing to the small fraction of missingness.
+

@@ -9,6 +9,26 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+## Q21.1
+
+1.
+If more houses are added per county, the parameter estimates will likely be the same but the
+finite population standard deviations will go down i.e the uncertainity in the data drops.
+The superpopulation standard deviation will remain the same since we have the same number
+of counties. Another way of stating this is that the uncertainity in individual alpha_j and mu_j goes down but the collective uncertainity remains the same.
+
+2.
+If 4 times as many counties are added, the parameter estimates will likely remain the same
+but the superpopulation standard deviation will decrease, i.e uncertainity about mu_alpha and sigma_alpha goes down. We are able to better fit the distribution for the alpha_j . This is because we have a larger sample size for alpha_j
+and we understand this distribution better with more counties. The within county inferences
+will likely remain the same.
+
+3. 
+If we have 4 times as many houses and 4 times as many counties, both the finite population
+standard deviation and the superpopulation standard deviations should decrease. This is because
+we have more samples at both levels. Assuming that our initial samples were a good representation of the underlying population the parameter estimates should not change significantly. Another way of stating this is that the uncertainity of individual alpha_j and mu_j will go down, also uncertainity about the distribution of mu_j s will go down.
+
 ## Q21.3
 A) Fit a varying intercept varying slope model to the radon data. Get point estimates(median) and 50% intervals for the finite population and superpopulation standard-deviations using this data.
 
@@ -99,8 +119,7 @@ radon.3 <- jags(data=radon.data,
 
 ```{r q1_2}
 plot(radon.3)
-radon.3
-attach.jags(radon.3)
+attach.jags(radon.3, overwrite = T)
 
 #Toss out the burn-in values
 sigma.a <- sigma.a[251:750]
@@ -212,7 +231,7 @@ radon.3 <- jags(data=radon.data,
 ```
 
 ```{r q1_22}
-attach.jags(radon.3)
+attach.jags(radon.3, overwrite = T)
 
 #Toss out the burn-in values
 sigma.a <- sigma.a[251:750]
@@ -287,15 +306,18 @@ the.model <- "model{
   for (i in 1:n){
     y[i] ~ dnorm (y.hat[i], tau.y)
     y.hat[i] <- a[county[i]] + b*x[i]
+    e.y[i] <- y[i] - y.hat[i]
   }
+  s.y <- sd(e.y[])
   b ~ dnorm (0, .0001)
   tau.y <- pow(sigma.y, -2)
   sigma.y ~ dunif (0, 100)
-  
   for (j in 1:J){
     a[j] ~ dnorm (a.hat[j], tau.a)
     a.hat[j] <- g.0 + g.1*u[j]
+    e.a[j] <- a[j] - a.hat[j]
   }
+  s.a <- sd(e.a[])
   g.0 ~ dnorm (0, .0001)
   g.1 ~ dnorm (0, .0001)
   tau.a <- pow(sigma.a, -2)
@@ -314,8 +336,7 @@ radon.inits <- function (){list(a=rnorm(J),
                                 sigma.a=runif(1))}
 
 # Defining which parameters of your model you want JAGS to return to you 
-# In the book (page 366), they are missing "g.0" and "g.1"
-radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "s.a", "s.y", "g.0", "g.1")
 
 # Now, we can actually run the model with the jags() function
 radon.3 <- jags(data=radon.data, 
@@ -327,13 +348,14 @@ radon.3 <- jags(data=radon.data,
                 DIC=F)
 
 radon.3
+radon.3_all_fixed_intercept <- radon.3
 ```
 
 
 Get the contrasts
 ```{r q2_2}
 n.sims <- 750
-attach.jags(radon.3)
+attach.jags(radon.3, overwrite = T)
 mean(g.1)
 quantile(g.1, c(.025,.975), na.rm = T)
 finite.slope <- rep (NA, 500)
@@ -347,7 +369,7 @@ quantile (finite.slope, c(.025,.975), na.rm = T)
 The superpopulation and finite-population contrasts are very similar in value.
 
 ##Part B - only look at the first three counties
-I don't show the model fitting code similar to previous downsampling
+I don't show the model fitting code, this code is similar to previous downsampling examples in this homework.
 
 ```{r q2_3, include = FALSE}
 ##Use Andy's tutorial code to setup the radon data.
@@ -431,12 +453,12 @@ radon.3
 ```
 
 Get the contrasts for the model using only three counties.
-Note I sampled three random counties instead of picking the first three,
+Note -  I sampled three random counties instead of picking the first three,
 the same inferences should hold.
 
 ```{r q2_4}
 n.sims <- 750
-attach.jags(radon.3)
+attach.jags(radon.3, overwrite = T)
 mean(g.1)
 quantile(g.1, c(.025,.975), na.rm = T)
 finite.slope <- rep (NA, 500)
@@ -449,3 +471,23 @@ quantile (finite.slope, c(.025,.975), na.rm = T)
 ```
 
 The superpopulation and finite-population contrasts are vastly different in this case.
+
+
+## Q22.1
+
+Take a varying-intercept model from one of the exercises in Part 2 of this book
+and construct the corresponding ANOVA plot as in Section 22.3.
+
+I will use the varying intercept radon model for this question.
+Fit the model using the same framework described above.
+
+```{r q3_1}
+rm(s.a)
+rm(s.y)
+attach.jags(radon.3_all_fixed_intercept, overwrite = T)
+combined <- data.frame(index = 251:750, s.a = s.a[251:750], s.y = s.y[251:750])
+require(reshape2)
+require(ggplot2)
+combined_m <- melt(combined, id.vars = c("index"))
+ggplot(combined_m) + geom_boxplot(aes(x = variable, y = value))
+```

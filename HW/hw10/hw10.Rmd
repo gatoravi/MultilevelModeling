@@ -223,23 +223,22 @@ s.a <- s.a[251:750]
 s.b <- s.b[251:750]
 s.y <- s.y[251:750]
 
-sigma.a_mean <- mean(sigma.a)
-sigma.b_mean <- mean(sigma.b)
-sigma.y_mean <- mean(sigma.y)
-s.a_mean <- mean(s.a)
-s.b_mean <- mean(s.b)
-s.y_mean <- mean(s.y)
+sigma.a_mean <- mean(sigma.a, na.rm = T)
+sigma.b_mean <- mean(sigma.b, na.rm = T)
+sigma.y_mean <- mean(sigma.y, na.rm = T)
+s.a_mean <- mean(s.a, na.rm = T)
+s.b_mean <- mean(s.b, na.rm = T)
+s.y_mean <- mean(s.y, na.rm = T)
 
 #sigma.a and s.a
-print(c(sigma.a_mean, quantile(sigma.a, c(0.25, 0.75))))
-print(c(s.a_mean, quantile(s.a, c(0.25, 0.75))))
+print(c(sigma.a_mean, quantile(sigma.a, c(0.25, 0.75), na.rm = T)))
+print(c(s.a_mean, quantile(s.a, c(0.25, 0.75), na.rm = T)))
 
 #sigma.b and s.b
-print(c(sigma.b_mean, quantile(sigma.b, c(0.25, 0.75))))
-print(c(s.b_mean, quantile(s.b, c(0.25, 0.75))))
+print(c(sigma.b_mean, quantile(sigma.b, c(0.25, 0.75), na.rm = T)))
+print(c(s.b_mean, quantile(s.b, c(0.25, 0.75), na.rm = T)))
 
 #sigma.y and s.y
-print(c(sigma.y_mean, quantile(sigma.y, c(0.25, 0.75))))
-print(c(s.y_mean, quantile(s.y, c(0.25, 0.75))))
-
+print(c(sigma.y_mean, quantile(sigma.y, c(0.25, 0.75), na.rm = T)))
+print(c(s.y_mean, quantile(s.y, c(0.25, 0.75), na.rm = T)))
 ```

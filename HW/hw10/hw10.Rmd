@@ -132,7 +132,6 @@ print(c(s.y_mean, quantile(s.y, c(0.25, 0.75))))
 
 ```{r q1_12, include=FALSE}
 sample_counties <- sample(srrs2_mn$county, 10)
-print(sample_counties)
 srrs2 <- srrs2[srrs2$county %in% sample_counties, ]
 mn <- srrs2$state=="MN"
 srrs2_mn <- srrs2[mn, ]
@@ -242,3 +241,211 @@ print(c(s.b_mean, quantile(s.b, c(0.25, 0.75), na.rm = T)))
 print(c(sigma.y_mean, quantile(sigma.y, c(0.25, 0.75), na.rm = T)))
 print(c(s.y_mean, quantile(s.y, c(0.25, 0.75), na.rm = T)))
 ```
+
+## 21.4
+Fit in Bugs a varying-intercept model to the radon data with log
+uranium as a group-level predictor. You will compare inferences for the superpopulation
+contrast (that is, the slope for log uranium in the county-level model)
+and the corresponding finite-population contrast (that is, the coefficient of log
+uranium for the intercepts for the particular counties in the data). You will need
+to postprocess the simulations in R in order to get simulations for the finitepopulation
+contrast.
+
+I used the code from Andy as a reference for the varying intercept model.
+
+```{r q2_1, include=FALSE}
+##Use Andy's tutorial code to setup the radon data.
+# Setting up the data (from Gelman & Hill's website)
+library(rjags); library(R2jags)
+srrs2 <- read.table ("srrs2.dat", header=T, sep=",")
+mn <- srrs2$state=="MN"
+srrs2_mn <- srrs2[mn, ]
+radon <- srrs2$activity[mn]
+log.radon <- log (ifelse (radon==0, .1, radon))
+floor <- srrs2$floor[mn]       # 0 for basement, 1 for first floor
+n <- length(radon)
+y <- log.radon
+x <- floor
+
+# get county index variable
+county.name <- as.vector(srrs2$county[mn])
+uniq <- unique(county.name)
+J <- length(uniq)
+county <- rep (NA, J)
+for (i in 1:J){
+  county[county.name==uniq[i]] <- i
+}
+
+srrs2.fips <- srrs2$stfips*1000 + srrs2$cntyfips
+cty <- read.table ("cty.dat", header=T, sep=",")
+usa.fips <- 1000*cty[,"stfips"] + cty[,"ctfips"]
+usa.rows <- match (unique(srrs2.fips[mn]), usa.fips)
+uranium <- cty[usa.rows,"Uppm"]
+u <- log (uranium)
+
+the.model <- "model{
+  for (i in 1:n){
+    y[i] ~ dnorm (y.hat[i], tau.y)
+    y.hat[i] <- a[county[i]] + b*x[i]
+  }
+  b ~ dnorm (0, .0001)
+  tau.y <- pow(sigma.y, -2)
+  sigma.y ~ dunif (0, 100)
+  
+  for (j in 1:J){
+    a[j] ~ dnorm (a.hat[j], tau.a)
+    a.hat[j] <- g.0 + g.1*u[j]
+  }
+  g.0 ~ dnorm (0, .0001)
+  g.1 ~ dnorm (0, .0001)
+  tau.a <- pow(sigma.a, -2)
+  sigma.a ~ dunif (0, 100)
+}"
+
+# Defining the data you will pass into the model -- you *already know* these values
+radon.data <- list ("n", "J", "x", "y", "county", "u")
+
+# Defining the initial values that your model's parameters (values you *don't* already know)
+radon.inits <- function (){list(a=rnorm(J), 
+                                b=rnorm(1), 
+                                g.0=rnorm(1), 
+                                g.1=rnorm(1),
+                                sigma.y=runif(1), 
+                                sigma.a=runif(1))}
+
+# Defining which parameters of your model you want JAGS to return to you 
+# In the book (page 366), they are missing "g.0" and "g.1"
+radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+
+# Now, we can actually run the model with the jags() function
+radon.3 <- jags(data=radon.data, 
+                inits=radon.inits, 
+                parameters.to.save=radon.parameters, 
+                model.file=textConnection(the.model), # Note the textConnection() function
+                n.chains=3, 
+                n.iter=500, 
+                DIC=F)
+
+radon.3
+```
+
+
+Get the contrasts
+```{r q2_2}
+n.sims <- 750
+attach.jags(radon.3)
+mean(g.1)
+quantile(g.1, c(.025,.975), na.rm = T)
+finite.slope <- rep (NA, 500)
+for (s in 251:n.sims){
+  finite.pop <- lm (a[s,] ~ u)
+  finite.slope[s] <- coef(finite.pop)["u"]
+}
+mean(finite.slope, na.rm = T)
+quantile (finite.slope, c(.025,.975), na.rm = T)
+```
+The superpopulation and finite-population contrasts are very similar in value.
+
+##Part B - only look at the first three counties
+I don't show the model fitting code similar to previous downsampling
+
+```{r q2_3, include = FALSE}
+##Use Andy's tutorial code to setup the radon data.
+# Setting up the data (from Gelman & Hill's website)
+library(rjags); library(R2jags)
+srrs2 <- read.table ("srrs2.dat", header=T, sep=",")
+mn <- srrs2$state=="MN"
+srrs2_mn <- srrs2[mn, ]
+sample_counties <- sample(srrs2_mn$county, 3)
+srrs2 <- srrs2[srrs2$county %in% sample_counties, ]
+mn <- srrs2$state=="MN"
+srrs2_mn <- srrs2[mn, ]
+radon <- srrs2$activity[mn]
+log.radon <- log (ifelse (radon==0, .1, radon))
+floor <- srrs2$floor[mn]       # 0 for basement, 1 for first floor
+n <- length(radon)
+y <- log.radon
+x <- floor
+
+# get county index variable
+county.name <- as.vector(srrs2$county[mn])
+uniq <- unique(county.name)
+J <- length(uniq)
+county <- rep (NA, J)
+for (i in 1:J){
+  county[county.name==uniq[i]] <- i
+}
+
+srrs2.fips <- srrs2$stfips*1000 + srrs2$cntyfips
+cty <- read.table ("cty.dat", header=T, sep=",")
+usa.fips <- 1000*cty[,"stfips"] + cty[,"ctfips"]
+usa.rows <- match (unique(srrs2.fips[mn]), usa.fips)
+uranium <- cty[usa.rows,"Uppm"]
+u <- log (uranium)
+print(u)
+
+the.model <- "model{
+  for (i in 1:n){
+    y[i] ~ dnorm (y.hat[i], tau.y)
+    y.hat[i] <- a[county[i]] + b*x[i]
+  }
+  b ~ dnorm (0, .0001)
+  tau.y <- pow(sigma.y, -2)
+  sigma.y ~ dunif (0, 100)
+  
+  for (j in 1:J){
+    a[j] ~ dnorm (a.hat[j], tau.a)
+    a.hat[j] <- g.0 + g.1*u[j]
+  }
+  g.0 ~ dnorm (0, .0001)
+  g.1 ~ dnorm (0, .0001)
+  tau.a <- pow(sigma.a, -2)
+  sigma.a ~ dunif (0, 100)
+}"
+
+# Defining the data you will pass into the model -- you *already know* these values
+radon.data <- list ("n", "J", "x", "y", "county", "u")
+
+# Defining the initial values that your model's parameters (values you *don't* already know)
+radon.inits <- function (){list(a=rnorm(J), 
+                                b=rnorm(1), 
+                                g.0=rnorm(1), 
+                                g.1=rnorm(1),
+                                sigma.y=runif(1), 
+                                sigma.a=runif(1))}
+
+# Defining which parameters of your model you want JAGS to return to you 
+# In the book (page 366), they are missing "g.0" and "g.1"
+radon.parameters <- c ("a", "b", "sigma.y", "sigma.a", "g.0", "g.1")
+
+# Now, we can actually run the model with the jags() function
+radon.3 <- jags(data=radon.data, 
+                inits=radon.inits, 
+                parameters.to.save=radon.parameters, 
+                model.file=textConnection(the.model), # Note the textConnection() function
+                n.chains=3, 
+                n.iter=500, 
+                DIC=F)
+
+radon.3
+```
+
+Get the contrasts for the model using only three counties.
+Note I sampled three random counties instead of picking the first three,
+the same inferences should hold.
+
+```{r q2_4}
+n.sims <- 750
+attach.jags(radon.3)
+mean(g.1)
+quantile(g.1, c(.025,.975), na.rm = T)
+finite.slope <- rep (NA, 500)
+for (s in 251:n.sims){
+  finite.pop <- lm (a[s,] ~ u)
+  finite.slope[s] <- coef(finite.pop)["u"]
+}
+mean(finite.slope, na.rm = T)
+quantile (finite.slope, c(.025,.975), na.rm = T)
+```
+
+The superpopulation and finite-population contrasts are vastly different in this case.

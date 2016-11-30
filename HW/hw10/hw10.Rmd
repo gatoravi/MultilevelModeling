@@ -115,12 +115,16 @@ s.a_mean <- mean(s.a)
 s.b_mean <- mean(s.b)
 s.y_mean <- mean(s.y)
 
-print(c(sigma.a_mean, sigma.b_mean, sigma.y_mean)) 
-print(quantile(sigma.a, c(0.025, 0.075)))
-print(quantile(sigma.b, c(0.025, 0.075)))
-print(quantile(sigma.y, c(0.025, 0.075)))
+#sigma.a and s.a
+print(c(sigma.a_mean, quantile(sigma.a, c(0.25, 0.75))))
+print(c(s.a_mean, quantile(s.a, c(0.25, 0.75))))
 
-print(c(s.a_mean, s.b_mean, s.y_mean))
+#sigma.b and s.b
+print(c(sigma.b_mean, quantile(sigma.b, c(0.25, 0.75))))
+print(c(s.b_mean, quantile(s.b, c(0.25, 0.75))))
 
-#print(sigma.y)
+#sigma.y and s.y
+print(c(sigma.y_mean, quantile(sigma.y, c(0.25, 0.75))))
+print(c(s.y_mean, quantile(s.y, c(0.25, 0.75))))
+
 ```

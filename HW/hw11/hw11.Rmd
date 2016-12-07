@@ -1,0 +1,107 @@
+---
+title: "HW11"
+author: "Avinash Ramu"
+date: "December 6, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 24.1
+Download the data in the folder dogs and fit some other models, for example
+using as a predictor the result from the previous trial, or the previous two trials,
+rather than the total number of shocks and avoidances.
+
+(a) Fit this model, as usual building up from simpler versions (first a singlelevel
+model, then varying intercepts, then varying slopes, then adding other
+predictors as appropriate). Plot the data and fitted model to make sure that
+your model makes sense.
+
+(b) Use Bugs to simulate replicated datasets from your model, and make various
+plots to compare the replicated with the actual data.
+
+
+```{r q14_1}
+library(rjags)
+library(R2jags)
+library(arm)
+library(coda)
+dogs <- read.table("dogs2.txt", row.names=1)
+
+
+the.model <- "model{
+for (j in 1:30){
+        n.avoid[j,1] <- 0
+        n.shock[j,1] <- 0
+        for (t in 2:25){
+            n.avoid[j,t] <- n.avoid[j,t-1] + (1 - y[j,t-1])
+            n.shock[j,t] <- n.shock[j,t-1] + y[j,t-1]
+        }
+        for (t in 1:25){
+            y[j,t] ~ dbin (p[j,t], 1)
+            logit(p[j,t]) <- b.0 + b.1*n.avoid[j,t] + b.2*n.shock[j,t]
+        }
+    }
+    b.0 ~ dnorm (0,0.01)
+    b.1 ~ dnorm (0,0.01)
+    b.2 ~ dnorm (0,0.01)
+}"
+
+
+# Defining the data you will pass into the model -- you *already know* these values
+y <- dogs
+dogs.data <- list ("y")
+
+# Defining the initial values that your model's parameters (values you *don't* already know)
+dogs.inits <- function (){list(b.0 = rnorm(1), 
+                               b.1 = rnorm(1),
+                               b.2 = rnorm(1))}
+# Parameters to be returned
+dogs.parameters <- c ("b.0", "b.1", "b.2")
+
+# Now, we can actually run the model with the jags() function
+dogs.1 <- jags( data=dogs.data, 
+                inits=dogs.inits, 
+                parameters.to.save=dogs.parameters, 
+                model.file=textConnection(the.model), # Note the textConnection() function
+                n.chains=3, 
+                n.iter=5000, 
+                DIC=F)
+dogs.1
+
+
+n.dogs <- nrow(dogs); n.trials <- ncol(dogs)
+b.0 <- 1.81; b.1 <- -0.38; b.2 <- -0.21
+n.sims <- 1000
+y.rep <- array (NA, c(n.sims, n.dogs, n.trials))
+for (j in 1:n.dogs){
+    n.avoid.rep <- rep (0, n.sims)
+    n.shock.rep <- rep (0, n.sims)
+    for (t in 1:n.trials){
+        p.rep <- invlogit (b.0 + b.1*n.avoid.rep + b.2*n.shock.rep)
+        y.rep[,j,t] <- rbinom (n.sims, 1, p.rep)
+        n.avoid.rep <- n.avoid.rep + 1 - y.rep[,j,t]
+        n.shock.rep <- n.shock.rep + y.rep[,j,t]
+    }
+}
+
+#Plot the results
+par(mfrow=c(1,2),mar=c(2,2,2,2),oma=c(2,2,4,2),col.axis="white",col.main="white",
+    col.lab="white",col.sub="white",col="white",bg="slategray")
+plot(1:25,1-apply(dogs,2,mean),type="n")
+rand.sample <- sample(x=1:n.sims,size=20)
+for (i in rand.sample) lines(1:25,1-apply(y.rep[i,,],2,mean),col="mintcream")
+lines(1:25,1-apply(dogs,2,mean),col="darkorchid4",lwd=3,type="l")
+mtext(side=3,line=1.25,"T(yrep) versus T(y)")
+plot(1:25,seq(-0.5,0.5,length=25),type="n")
+for (i in rand.sample) 
+    lines(1:25,(1-apply(y.rep[i,,],2,mean))-(1-apply(dogs,2,mean)),
+    col="mintcream",lwd=2,type="l")
+abline(h=0,col="darkorchid4",lwd=3)
+mtext(side=3,line=1.25,"T(yrep)−T(y)")
+title(outer=TRUE,line=2,col="white","Avoidance By Trial Number")
+
+
+```

@@ -1,4 +1,4 @@
-setwd("~/gtex/mut/avi")
+setwd("./")
 x<-read.table("GTEx-12WSJ-exome-intersect.recode.vcf")
 x$region<-paste(x[,1],x[,2],sep=":")
 z<-read.table("GTEX-12WSJ_calls.tsv",header=T,stringsAsFactors=F)
@@ -49,7 +49,7 @@ sum(z$altcount[z$id %in% homs]>5)/sum(z$depth[z$id %in% homs]>20)
 
 ##### INVESTIGATE DISTRIBUTION OF MUTATIONS IN FULL DATASET (AFTER SOME MODEST FILTERING) 
 
-setwd("~/gtex/mut/avi/full")
+setwd("./")
 x<-read.table("uniq_filt_nonig_ann.bed",header=F)
 x$gene<-gsub('\\S+SYMBOL=(\\S+);SYMBOL_SOURCE\\S+','\\1',x[,14])
 syn<-x[which(x[,7]=="synonymous_variant"),]

@@ -83,7 +83,7 @@ try_lm <- function() {
                     DIC=F)
     plot(mutation.1)
     print(mutation.1)
-    save.image("mutation1_varying_intercept.Rdata")
+    save(mutation.1, file = "mutation1_varying_intercept.Rdata")
 }
 
 try_lm()
